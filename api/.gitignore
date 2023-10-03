@@ -1,0 +1,9 @@
+# Python stuff
+app/__pycache__
+
+## Tip of My Tongue stuff
+
+# Dont check in the massive files :)
+# - Embedding cache ~5gb
+# - Vocab List - Pull it from online
+res/ 
