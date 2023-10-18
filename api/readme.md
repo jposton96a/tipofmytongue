@@ -29,9 +29,18 @@ Currently, the the interface for finding words is through the logic in `query_wo
     - [ ] Parallelize embeddings vocab
     - [ ] Support local embedding operations
 
-4. Use the embedding cache to
+4. (Optional - debug tooling) Query an embedding against the cache db
     ```bash
-    # Creates res/<embedding_cache_name>.npz
-    python src/build_cache.py
+    # References the embedding cache @ res/<embedding_cache_name>.npz
+    python src/query_words.py
     ```
 
+5. Run the API server
+    ```bash
+    uvicorn main:app --host 0.0.0.0 --port 8000 --reload --env-file config.env
+    ```
+
+### Resources
+https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
+https://mangum.io/
+https://ademoverflow.com/blog/tutorial-fastapi-aws-lambda-serverless/
