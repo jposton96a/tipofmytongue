@@ -45,6 +45,7 @@ const initialAppState = {
   ops: [{ description: '', function: 'start' }] as WordOperation[],
   predictions: []
 }
+
 function App() {
   const [operators, setOperators] = useState<WordOperation[]>(initialAppState.ops);
   const [predictions, setPredictions] = useState<WordPrediction[]>(initialAppState.predictions);
@@ -66,12 +67,20 @@ function App() {
     setOperators(updatedOperators);
     // calculateWords(updatedOperators);
   };
-//
+
   const calculateWords = (operators: WordOperation[]) => {
     operators = operators.filter(operator => operator.description !== "" && operator.description !== null);
+    
     getWords(operators).then((latest_results: WordPrediction[]) => {
       console.log("Got results: ", latest_results);
-      setPredictions(latest_results);
+      
+      // Add the results to the operator
+      const updatedOperators = [...operators];
+      updatedOperators[updatedOperators.length - 1].results = latest_results;
+      setOperators(updatedOperators);
+
+      // setPredictions(latest_results);
+      handleAddOperator();
     }).catch(e => console.log)
   };
 
@@ -105,7 +114,7 @@ function App() {
             <h2>I'm thinking of a word...</h2>
 
             {operators.map((operator, index) => (
-              <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+              <div key={index} className={styles.operator}>
                 <input
                   type="text"
                   value={operator.description}
@@ -117,12 +126,24 @@ function App() {
                 {index > 0 && (
                 <select
                   value={operator.function}
-                  onChange={(e) => handleOperatorChange(index, 'function', e.target.value as 'more' | 'less')}
-                  style={{ marginRight: '10px' }}
+                  onChange={(e) => handleOperatorChange(index, 'function', e.target.value as 'more_like' | 'less_like')}
+                  style={{ marginRight: '0px' }}
                 >
                   <option value="more_like">Like this</option>
                   <option value="less_like">Not like this</option>
                 </select>
+                )}
+
+                {/* Results */}
+                {operator.results && (
+                <div>
+                  {operator.results.map((prediction, index) => (
+                    <button key={index}>
+                      <span>{prediction.word}</span>
+                      {/* <span>{prediction.dist}</span> */}
+                    </button>
+                  ))}
+                </div>
                 )}
 
                 {/* Remove Operator Button */}
@@ -131,19 +152,10 @@ function App() {
                 )}
               </div>
             ))}
-            <button onClick={handleAddOperator}>Add Operator</button>
-            <button onClick={() => calculateWords(operators)}>Get Words</button>
+            {/* <button onClick={handleAddOperator}>Add Operator</button> */}
+            <button onClick={() => { calculateWords(operators) }}>Get Words</button>
             <button onClick={() => resetApp()}>Start Over</button>
           </div>
-        </div>
-
-        <div>
-          {predictions.map((prediction, index) => (
-            <div key={index}>
-              <span>{prediction.word}</span>
-              <span>{prediction.dist}</span>
-            </div>
-          ))}
         </div>
       </main>
 
