@@ -1,3 +1,4 @@
+import os
 from typing import List, Union
 from fastapi import FastAPI
 import numpy as np
@@ -6,6 +7,7 @@ from enum import Enum
 
 from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated
 from app.query_utils import find_similar_words
+from app.download_embeddings import download_embeddings
 
 from mangum import Mangum
 
@@ -15,6 +17,12 @@ from mangum import Mangum
 
 cache_path = "res/word_embeddings_cache.npz.chk_non_norm_466503"
 dict_path = "res/words.txt"
+
+# Download the embedding cache if it doesn't exist locally
+if 'DOWNLOAD_CACHE_NAME' in os.environ and not os.path.exists(cache_path):
+    cache_name=os.getenv("DOWNLOAD_CACHE_NAME")
+    print(cache_name)
+    download_embeddings(cache_name)
 
 embeddings = load_embeddings(cache_path)
 dictionary = load_word_dicts(dict_path)

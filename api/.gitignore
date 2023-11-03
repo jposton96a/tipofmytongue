@@ -12,3 +12,6 @@ res/
 # Ignore Credentials
 .env
 config.env
+build/tipofmytongue_lambda_a6fabf2.zip
+build/tipofmytongue_lambda_e28f795.zip
+.vscode/settings.json
