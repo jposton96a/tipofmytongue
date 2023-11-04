@@ -1,5 +1,6 @@
 .container {
-    padding: 0 2rem;
+    padding: 0;
+    margin: 0;
   }
   
 .main {
@@ -28,26 +29,10 @@
   flex-grow: 1;
 }
 
-.title a {
-  color: #0070f3;
-  text-decoration: none;
-}
-
-.title a:hover,
-.title a:focus,
-.title a:active {
-  text-decoration: underline;
-}
-
 .title {
   margin: 0;
   line-height: 1;
   font-size: 2rem;
-}
-
-.title,
-.description {
-  text-align: center;
 }
 
 .description {
@@ -56,58 +41,29 @@
   font-size: 1.5rem;
 }
 
+.title,
+.description {
+  text-align: center;
+}
+
+
 .card {
   display: flex;
   align-items: center;
   justify-content: center;
   
-  max-width: 500px;
+  max-width: 600px;
+  /* overflow: hidden; */
   width: 70%;
   /* border: 1px solid #000; */
   flex-direction: column;
 }
 
-@media (max-width: 600px) {
-  .card {
-    width: 100%;
-  }
-}
 
 .operator { 
-  display: 'flex';
   align-items: center;
-  width: 100%;
-  border-bottom: 1px solid #eaeaea;
-  padding: 20px;
 }
 
-.operatorInputs {
-  display: "flexbox"; 
-  flex-direction: "row";
-  width: 100%;
-}
-
-.operatorInputs>input {
-  width: 80%;
-  padding-left: 10px;
-  margin-right: 10px;
-  height: 2em;
-
-  border: none;
-  border-radius: 0.5em;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-}
-
-.operatorInputs>button {
-  text-align: center;
-  height: 2em;
-  width: 2em;
-  
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-  border: 2px solid rgba(139, 0, 0, 0.5);
-  color: darkred;
-}
 
 .operatorResults {
   padding: 20px;
@@ -118,28 +74,12 @@
   text-align: center;
 }
 
-.operatorResults>button {
-  margin: 5px;
-  height: 2em;
-  border-radius: 1em;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-}
-
 .searchControls {
-  margin: 50px;
   display: flex; 
   flex-direction: column;
   justify-content: center;
 }
 
-.card h2 {
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
-}
-
-.card p {
-  margin: 0;
-  font-size: 1.25rem;
-  line-height: 1.5;
+.searchControls>button {
+  margin: 10px;
 }
