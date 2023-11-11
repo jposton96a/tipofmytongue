@@ -109,6 +109,7 @@ const OperatorInput = (props: {index: number, onSubmit: any, operation: WordOper
 
   return (
     <Input
+      autoFocus={true}
       required={true}
       value={props.operation.description}
       disabled={props.disabled}
