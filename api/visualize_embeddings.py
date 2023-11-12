@@ -17,7 +17,7 @@ dict_path = "res/words.txt"
 transform_model_path = "res/pca_transform.pkl"
 transformed_embeddings_path = "res/pca_transform_weights.npy"
 
-embeddings = load_embeddings(cache_path)[:200]
+embeddings = load_embeddings(cache_path)[:350000]
 dictionary = load_word_dicts(dict_path)
 print(f"Loaded {len(dictionary)} words from {dict_path}")
 

@@ -36,7 +36,7 @@ def load_word_dicts(file_path):
     lines = file.readlines()
     file.close()
     del file
-    return lines
+    return [entry.strip() for entry in lines]
 
 
 def count_populated(a: list[np.ndarray], prefix: bool = True):

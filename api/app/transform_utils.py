@@ -12,9 +12,10 @@ def create_or_load_transform(embeddings, transformed_embeddings_path, transform_
     transformed_embeddings = None
 
     if os.path.isfile(transformed_embeddings_path) or os.path.isfile(transform_model_path):
-        print("Detected existing PCA model", end='')
+        print("Detected existing PCA model...", end='')
         pca = joblib.load(transform_model_path)
         transformed_embeddings = np.load(transformed_embeddings_path)
+        print("loaded!")
 
     else:
         # Perform PCA to reduce the embeddings to 3 dimensions
