@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+// @ts-nocheck
+
+import React, { useEffect, useRef, useState } from 'react';
 import logo from './logo.svg';
 
 import styles from './Home.module.css'
@@ -18,8 +20,10 @@ import { FiThumbsUp } from "react-icons/fi";
 import { FiThumbsDown } from "react-icons/fi";
 import { FiCheckCircle } from "react-icons/fi";
 import { Accordion, AccordionDetails, AccordionGroup, AccordionSummary, LinearProgress, Typography } from '@mui/joy';
-import { isDisabled } from '@testing-library/user-event/dist/utils';
 
+import Plot from 'react-plotly.js';
+
+import background_vectors from "./data/background_vectors.json"
 
 async function getWords(operators: WordOperation[]): Promise<WordPrediction[]> {
   const res = await fetch('/operations', {
@@ -46,6 +50,24 @@ async function getWords(operators: WordOperation[]): Promise<WordPrediction[]> {
   return [];
 }
 
+async function getScatterData(operators: WordOperation[]): Promise<any> {
+  const res = await fetch('/scatter', {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+    },
+    body: JSON.stringify(operators),
+  })
+  
+  if(!res.ok){
+    throw new Error(`Response failed with code ${res.status} - ${res.statusText}`);
+  }
+  
+  const parsedResp = await res.json() as unknown as ScatterData[];
+  console.log("Response: ", parsedResp)
+  return parsedResp
+}
+
 type WordAction = "start" | "more_like" | "less_like"
 
 interface WordPrediction { word: string; dist: number };
@@ -56,6 +78,21 @@ type WordOperation = {
   description: string,
   results?: WordPrediction[],
   selected_words?: string[]
+}
+
+type ScatterData = {
+  search_vectors: {
+    description: string,
+    coords: number[]
+  },
+  result_vectors: {
+    description: string,
+    coords: number[]
+  },
+  background_vectors: {
+    description: string,
+    coords: number[]
+  }
 }
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
@@ -118,9 +155,9 @@ const OperatorInput = (props: {index: number, onSubmit: any, operation: WordOper
       startDecorator={(<React.Fragment>
           {props.disabled ? (
             opFunctionBool ? (
-              <FiThumbsUp style={{ color: '#0B6BCB' }} />
+              <FiThumbsUp style={{ color: '#108893' }} />
             ) : (
-              <FiThumbsDown style={{ color: '#A51818' }} />
+              <FiThumbsDown style={{ color: '#aa2e25' }} />
             )
           ) : (
             <Switch
@@ -128,11 +165,11 @@ const OperatorInput = (props: {index: number, onSubmit: any, operation: WordOper
               color={opFunctionBool ?   'primary' : 'danger'}
               startDecorator={
                 <FiThumbsDown
-                  style={{ color: opFunctionBool ? '#555E68' : '#A51818' }}
+                  style={{ color: opFunctionBool ? '#555E68' : '#aa2e25' }}
                 />
               }
               endDecorator={
-                <FiThumbsUp style={{ color: opFunctionBool ? '#0B6BCB' : '#555E68' }} />
+                <FiThumbsUp style={{ color: opFunctionBool ? '#108893' : '#555E68' }} />
               }
               checked={opFunctionBool}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -150,15 +187,24 @@ const OperatorInput = (props: {index: number, onSubmit: any, operation: WordOper
   )
 }
 
+const extractDataPoints = (data: any[]) => {
+  let x = [], y = [], z = [], text = [];
+  data.forEach(datapoint => {
+    x.push(datapoint.coords[0]);
+    y.push(datapoint.coords[1]);
+    z.push(datapoint.coords[2]);
+    text.push(datapoint.description);
+  });
+  return {x, y, z, text};
+};
+
+const background_trace_data = extractDataPoints(background_vectors["background_vectors"]);
 
 function App() {
   const [operators, setOperators] = useState<WordOperation[]>(clone(initialAppState.ops));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-
-  const handleAddOperator = () => {
-    setOperators([...operators, { description: '', function: 'more_like' }]);
-  };
+  const [scatterTraceData, setScatterTraceData] = useState([]);
 
   const handleOperatorChange = (index: number, field: keyof WordOperation, value: any) => {
     const updatedOperators = [...operators];
@@ -174,6 +220,10 @@ function App() {
 
   const resetApp = () => {
     setOperators(clone(initialAppState.ops));
+    setOperators({
+      resultTraceData: [],
+      searchTraceData: []
+    });
   }
 
   const calculateWords = (operators: WordOperation[]) => {
@@ -182,37 +232,108 @@ function App() {
     setLoading(true);
     setError(false);
 
+    if(operators.length > 0) {
+      getWords(operators).then((latest_results: WordPrediction[]) => {
+        console.log("Got results: ", latest_results);
+        
+        // Add the results to the operator
+        const updatedOperators = [...operators];
+        updatedOperators[updatedOperators.length - 1].results = latest_results;
+        setOperators([...updatedOperators, { description: '', function: 'more_like' }]);
 
-    getWords(operators).then((latest_results: WordPrediction[]) => {
-      console.log("Got results: ", latest_results);
-      
-      // Add the results to the operator
-      const updatedOperators = [...operators];
-      updatedOperators[updatedOperators.length - 1].results = latest_results;
-      setOperators(updatedOperators);
+        getScatterData(updatedOperators).then((scatterData: ScatterData) => {
+          // For each tracem reformat the returned data into a format Plotly can graph
+          setScatterTraceData({
+            resultTraceData: extractDataPoints(scatterData.result_vectors),
+            searchTraceData: extractDataPoints(scatterData.search_vectors)
+          })
+        })
 
-      // setPredictions(latest_results);
-      handleAddOperator();
-    }).catch(e => {
-      console.log(e);
-      setError(true); 
-    }).finally(() => setLoading(false))
+      }).catch(e => {
+        console.log(e);
+        setError(true); 
+      }).finally(() => setLoading(false))
+    }
   };
 
   // Debug:
   console.log("Loading: ", loading);
   console.log("Operators: ", operators);
+  console.log("Scatter Traces: ", scatterTraceData);
 
   return (
     <div className={styles.container}>
 
       <main className={styles.main}>
         <Typography level="h1" fontWeight={"md"} color="neutral" >
-          TipofMyTongue.ai
+          Tip of My Tongue
         </Typography>
 
         <Typography level="h4" fontWeight={"sm"} color="neutral" padding={"10px"} sx={{textAlign: "center"}}>
-          It's 2023... why are we still using a thesaurus?
+          Navigate the dictionary with AI!
+        </Typography>
+
+        <Plot
+          data={[
+            {
+              ...background_trace_data,
+              textposition: 'top',
+              mode: 'markers',
+              marker: {
+                size: 3,
+                color: 'rgba(16, 136, 147, 1)',
+                line: {
+                  color: 'rgba(16, 136, 147, 1)',
+                  width: 0.5
+                },
+                opacity: 0.15
+              },
+              type: 'scatter3d'
+            },
+            {
+              ...scatterTraceData["resultTraceData"],
+              textposition: 'top',
+              mode: 'markers',
+              marker: {
+                color: 'rgba(16, 136, 147, 0.9)',
+                size: 4,
+                line: {
+                  color: 'rgba(127, 127, 127, 0.6)',
+                  width: 0.5
+                },
+                opacity: 0.7
+              },
+              type: 'scatter3d'
+            },
+            {
+              ...scatterTraceData["searchTraceData"],
+              mode: 'lines',
+              line: {
+                shape: 'spline',
+                color: 'rgb(127, 127, 127)',
+                smoothing: 0,
+                simplify: true,
+                width: 4
+              },
+              type: 'scatter3d'
+            }
+          ]}
+          layout={{
+            autosize: false,
+            margin: {
+              l: 0,
+              r: 0,
+              b: 20,
+              t: 0,
+            },
+            width: 400, 
+            height: 300, 
+            showlegend: false,
+          }}
+        />
+
+        <Typography fontWeight={"sm"} color="neutral" padding={"10px"} sx={{textAlign: "center"}}>
+          Enter a phrase for the word you're looking for, and see where it lands on the graph
         </Typography>
 
         <div className={styles.card}>
@@ -226,9 +347,10 @@ function App() {
               {operators.map((operator, index) => (
                 <Accordion 
                   key={index} 
-                  className={styles.operator} 
+                  className={styles.operator}
                   expanded={index == operators.length - 2}>
 
+                  {/* Search Input & History */}
                   <AccordionSummary className={styles.opGroup}>
                     <OperatorInput 
                       index={index}
@@ -247,7 +369,7 @@ function App() {
                           ))}
                       </div> 
                     )}
-                </AccordionDetails>
+                  </AccordionDetails>
                 
                 </Accordion>
               ))}
