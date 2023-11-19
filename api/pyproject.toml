@@ -5,7 +5,7 @@ description = ""
 authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.9.0,<3.11"
+python = ">=3.9.0"
 openai = {extras = ["datalib"], version = "^0.28.0"}
 numpy = "^1.25.2"
 fastapi = "^0.103.2"

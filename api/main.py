@@ -18,11 +18,11 @@ from app.transform_utils import create_or_load_transform
 ### App Dependencies
 ###########################
 
-cache_path = "res/word_embeddings_cache.npz.chk_non_norm_466503"
+cache_path = "res/word_embeddings_cache.npz"
 dict_path = "res/words.txt"
 
 transform_model_path = "res/pca_transform.pkl"
-transformed_embeddings_path = "res/pca_transform_weights.npy"
+transformed_embeddings_path = "res/pca_transformed_embeddings.npy"
 
 # Download the embedding cache if it doesn't exist locally
 if 'DOWNLOAD_CACHE_NAME' in os.environ and not os.path.exists(cache_path):

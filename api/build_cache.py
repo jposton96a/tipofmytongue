@@ -13,15 +13,7 @@ file.close()
 
 def save_embeddings(file_path, embeddings):
   np_embeddings = embeddings
-  # This may be creating a duplicate in-mem?
-  # np_embeddings = np.array(embeddings)
 
-  # Normalize the embeddings. I have no idea what this does mathematically
-  # Stolen from https://github.com/karpathy/randomfun/blob/master/knn_vs_svm.ipynb
-
-  # TEMPORARILY DISABLED. DO AS POST-PROCESSING
-  # embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True)) # L2 normalize
-  
   # save the embeddings array to the .npz file using a keyword argument
   np.savez(file_path, embeddings=np_embeddings)
   del(np_embeddings)
@@ -30,13 +22,10 @@ def count_populated(a):
   for i, line in enumerate(a):
     if line.nonzero()[0].size == 0 or np.any(np.isnan(line)):
       return i
-  # return len(a[np.count_nonzero(np.logical_not(np.logical_or(a == 0, np.isnan(a))), axis=1) > 0])
 
 # define your input parameters
 start = 0  # start line index
 end = len(lines)  # end line index
-
-input("MemCheck")
 
 # create an empty list to store the embeddings
 embeddings = None

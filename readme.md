@@ -71,7 +71,7 @@ King - Man + Woman = Queen
 In order to model this, queries are processed as an sequence of individual embedding [`Operations`](#operations). Each operation consists of an input text & mathematical transform. Query vectors are calculated by applying each operation's transform to a running value that is carried over from the result of the previous operation. After each iteration, the result is normalized to eliminate the compounding effect on the magnitude of the vector (while preserving the vector's direction).
 
 #### Dimension Visualization
-As embeddings from OpenAI's model (`text-embedding-ada-002`) are of dimensions (1536,1), they cannot be plotted directly to a 3D space. In order to visualize these embeddings, a transform must be applied to reduce the dimensionality of the vectors from 1536 to 3D. For this application, Principal Component Analyis (PCA) is used to train a model that projects the embeddings onto a lower dimension. While this operation is lossy, relationships between vectors is preserved in the resultant 3D vectors.
+As embeddings from OpenAI's model (`text-embedding-ada-002`) are of dimensions (1536,1), they cannot be plotted directly to a 3D space. In order to visualize these embeddings, a transform must be applied to reduce the dimensionality of the vectors from 1536 to 3D. For this application, Principal Component Analyis (PCA) is used to train a model that projects the embeddings onto a lower dimension. While this operation is lossy, relationships between vectors are preserved in the resultant 3D vectors.
 
 ### Data Model / Concepts
 

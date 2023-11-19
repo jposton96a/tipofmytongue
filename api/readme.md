@@ -9,7 +9,7 @@ The server relies on a list of words & 3 pre-computed files used for queries. Ea
 1. Vocabulary List `res/words.txt` - (created in Step #1) a list of words to query against
 1. Embedding Cache `res/word_embeddings_cache.npz` - (created in Step #3) a cache of embeddings for each of the words in vocabulary
 1. PCA Transform Model `res/pca_transform.pkl` - (created in Step #5) the trained PCA model
-1. PCA Transform Cache `res/pca_transform_weights.npy` - (created in Step #5) a cache of precomputed 3D transforms of the embeddings in the Embedding Cache
+1. PCA Transform Cache `res/pca_transformed_embeddings.npy` - (created in Step #5) a cache of precomputed 3D transforms of the embeddings in the Embedding Cache
 
 ## Development Setup
 
@@ -19,6 +19,7 @@ The server relies on a list of words & 3 pre-computed files used for queries. Ea
     ```
 2. Setup Python dependencies
     ```bash
+    python -m venv .venv
     source .venv/bin/activate
     pip install poetry
     poetry install 

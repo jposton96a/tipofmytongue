@@ -11,13 +11,13 @@ from app.download_embeddings import download_embeddings
 from app.transform_utils import create_or_load_transform
 
 # cache_path = "res/chatgpt_embedding_subset_100.npz"
-cache_path = "res/word_embeddings_cache.npz.chk_non_norm_466503"
+cache_path = "res/word_embeddings_cache.npz"
 dict_path = "res/words.txt"
 
 transform_model_path = "res/pca_transform.pkl"
-transformed_embeddings_path = "res/pca_transform_weights.npy"
+transformed_embeddings_path = "res/pca_transformed_embeddings.npy"
 
-embeddings = load_embeddings(cache_path)[:350000]
+embeddings = load_embeddings(cache_path)
 dictionary = load_word_dicts(dict_path)
 print(f"Loaded {len(dictionary)} words from {dict_path}")
 
@@ -48,8 +48,9 @@ ax = fig.add_subplot(111, projection='3d')
 x, y, z = reduced_embeddings[:, 0], reduced_embeddings[:, 1], reduced_embeddings[:, 2]
 ax.scatter(x, y, z)
 
-# Scatter plot for the search vector
+# Plot the search vector
 ax.scatter(transformed_search_vector[0][0], transformed_search_vector[0][1], transformed_search_vector[0][2], color='red', label='Search Vector')
+
 
 # Label each point with its corresponding word
 for i, word in enumerate(dictionary[:embeddings_count]):
