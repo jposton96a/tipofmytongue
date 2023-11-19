@@ -1,0 +1,17 @@
+# Python stuff
+__pycache__/
+app/__pycache__/
+
+## Tip of My Tongue stuff
+
+# Dont check in the massive files :)
+# - Embedding cache ~5gb
+# - Vocab List - Pull it from online
+res/ 
+
+# Ignore Credentials
+.env
+config.env
+build/tipofmytongue_lambda_a6fabf2.zip
+build/tipofmytongue_lambda_e28f795.zip
+.vscode/settings.json
