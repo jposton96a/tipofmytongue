@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    build: 
+      context: ./api
+    environment:
+        OPENAI_API_KEY: "<INSERT OPENAI_API_KEY>"
+    volumes:
+      - ./api/res/words.txt:/src/res/words.txt:ro
+      - ./api/res/word_embeddings_cache.npz:/src/res/word_embeddings_cache.npz:ro
+      - ./api/res/pca_transform.pkl:/src/res/pca_transform.pkl:ro
+      - ./api/res/pca_transform_weights.npy:/src/res/pca_transform_weights.npy:ro
+    ports:
+      - 8000:8000
+
+  ui_server: 
+    build:
+      context: ./webapp
+    environment:
+      API_SERVER: "app:8000" # Frontend Nginx router proxies to the "app" container
+    ports:
+      - 8080:80

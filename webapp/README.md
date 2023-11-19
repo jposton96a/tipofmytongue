@@ -1,4 +1,8 @@
-# Getting Started with Create React App
+# Tip of My Tongue | Web App
+
+Nothing special here - this is a basic CRA workspace.
+
+----
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

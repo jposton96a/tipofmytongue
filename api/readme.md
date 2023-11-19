@@ -1,9 +1,15 @@
-# Tip of My Tongue (.ai)
+# Tip of My Tongue | Backend API Server
 
 ## Overview
-Tip of My Tongue is a new approach to the thesaurus. Where a thesaurus enables a user to search for synonyms of a given word, this application allows users to describe the word they're looking for & find semantically similar words. The (future) interface enables the user to navigate the embedding vector space to hone their results in to the word they're looking for.
+This directory contains the scripts & API implementation used to run the backend for [TipOfMyTongue](../readme). This server is responsible for querying the embeddings database for words similar to the input query.
 
-Currently, the the interface for finding words is through the logic in `query_words.py`.
+### Dependencies
+The server relies on a list of words & 3 pre-computed files used for queries. Each of these must be created before starting the server
+
+1. Vocabulary List `res/words.txt` - (created in Step #1) a list of words to query against
+1. Embedding Cache `res/word_embeddings_cache.npz` - (created in Step #3) a cache of embeddings for each of the words in vocabulary
+1. PCA Transform Model `res/pca_transform.pkl` - (created in Step #5) the trained PCA model
+1. PCA Transform Cache `res/pca_transform_weights.npy` - (created in Step #5) a cache of precomputed 3D transforms of the embeddings in the Embedding Cache
 
 ## Development Setup
 
@@ -22,7 +28,7 @@ Currently, the the interface for finding words is through the logic in `query_wo
     ```bash
     # Creates res/<embedding_cache_name>.npz
     export OPENAI_API_KEY="<Insert OPENAI Key>"
-    python src/build_cache.py
+    python build_cache.py
     ```
     
     **_#TODO_** Improve build stage. Currently the process took me ~36hrs to embed the entire vocab list.
@@ -32,15 +38,26 @@ Currently, the the interface for finding words is through the logic in `query_wo
 4. (Optional - debug tooling) Query an embedding against the cache db
     ```bash
     # References the embedding cache @ res/<embedding_cache_name>.npz
-    python src/query_words.py
+    python query_words.py
     ```
 
-5. Run the API server
+5. Build the PCA Model
+    ```bash
+    # as a side effect, this renders all processed embeddings into `plot.png` 
+    python visualize_embeddings.py
+    ```
+
+6. Run the API server
     ```bash
     uvicorn main:app --host 0.0.0.0 --port 8000 --reload --env-file config.env
     ```
 
 ### Resources
-https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
+
+##### Karpathy's KNN vs SVM
+https://github.com/karpathy/randomfun/blob/master/knn_vs_svm.ipynb
+
+##### Deploy FastAPI on Lambda
 https://mangum.io/
+https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
 https://ademoverflow.com/blog/tutorial-fastapi-aws-lambda-serverless/
