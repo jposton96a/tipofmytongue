@@ -1,14 +1,9 @@
-import os
-import joblib
-import numpy as np
-from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from sklearn.decomposition import PCA
 
-from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated
-from app.query_utils import find_similar_words
-from app.download_embeddings import download_embeddings
+from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated, load_models
 from app.transform_utils import create_or_load_transform
+
 
 # cache_path = "res/chatgpt_embedding_subset_100.npz"
 cache_path = "res/word_embeddings_cache.npz"
@@ -35,7 +30,8 @@ transform_model, reduced_embeddings = create_or_load_transform(
     transformed_embeddings_path=transformed_embeddings_path
 )
 
-input_vector = create_embedding("king")
+tokenizer, model, device = load_models()
+input_vector = create_embedding("king", tokenizer, model, device)
 transformed_search_vector = transform_model.transform(input_vector.reshape(1, -1))
 
 print (transformed_search_vector)

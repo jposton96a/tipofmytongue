@@ -2,6 +2,11 @@
 import numpy as np
 import openai
 import os.path
+import torch
+import torch.nn.functional as F
+
+from app.embedding_utils import mean_pooling, load_models
+
 
 out_cache_path = "res/word_embeddings_cache.npz"
 word_dicts = "res/words.txt"
@@ -43,19 +48,31 @@ if os.path.isfile(out_cache_path):
   start=checkpoint
 else:
   print("Building cache from scratch...")
-  embeddings = np.empty((len(lines), 1536))
+  # embeddings = np.empty((len(lines), 1536))
+  embeddings = np.empty((len(lines), 384))
 
 # Free up some memory
 lines_subset = lines[start:end]
 del(lines)
+
+# client = OpenAI()
+tokenizer, model, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
 
 # iterate over the sublist of lines based on the indices
 for i, line in enumerate(lines_subset):
   # strip the newline character and assign it to text
   text = line.rstrip("\n")
   text_id = start + i
-  response = openai.Embedding.create(model="text-embedding-ada-002", input=text)
-  embeddings[text_id] = response["data"][0]["embedding"]
+  encoded_input = tokenizer(text, padding=True, truncation=True, return_tensors='pt').to(device)
+
+  with torch.no_grad():
+    model_output = model(**encoded_input)
+
+  results = mean_pooling(model_output, encoded_input['attention_mask'])
+  results = torch.squeeze(F.normalize(results, p=2, dim=1)).cpu()
+  # response = client.embeddings.create(model="text-embedding-ada-002", input=text)
+  embeddings[text_id] = results
+  # embeddings[text_id] = response["data"][0]["embedding"]
   if i % 500 == 0 or i == len(lines_subset) - 1:
     print(f"Saving {i} (idx={text_id}) of {end-start} words... ", end='')
     save_embeddings(out_cache_path, embeddings)
