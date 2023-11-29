@@ -2,12 +2,32 @@ version: '3.8'
 
 services:
   app:
-    build: 
+    build:
       context: ./api
     environment:
         OPENAI_API_KEY: ""
     volumes:
-      - ./api/res:/src/res:ro
+      - "./api/res:/src/res:ro"
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  ui_server:
+    build:
+      context: ./webapp
+    environment:
+      API_SERVER: "app:8000" # Frontend Nginx router proxies to the "app" container
+    ports:
+      - "8080:80"
+
+  triton-server:
+    image: nvcr.io/nvidia/tritonserver:23.10-py3
+    volumes:
+      - "./triton:/models:rw"
     deploy:
       resources:
         reservations:
@@ -15,11 +35,4 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-
-  ui_server: 
-    build:
-      context: ./webapp
-    environment:
-      API_SERVER: "app:8000" # Frontend Nginx router proxies to the "app" container
-    ports:
-      - 8080:80
+    command: tritonserver --model-repository=/models --http-port 8100 --grpc-port 8101 --metrics-port 8102

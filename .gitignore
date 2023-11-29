@@ -1,0 +1,2 @@
+# model can be downloaded from https://huggingface.co/optimum/all-MiniLM-L6-v2/tree/main
+./triton/all-MiniLM-L6-v2/1/model.onnx

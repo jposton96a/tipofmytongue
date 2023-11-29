@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from enum import Enum
 from mangum import Mangum
 
-from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated, load_models
+from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated, load_models, TritonRemoteModel
 from app.query_utils import find_similar_words
 from app.download_embeddings import download_embeddings
 from app.transform_utils import create_or_load_transform
@@ -50,6 +50,7 @@ transform_model, reduced_embeddings = create_or_load_transform(
 
 word_to_transform_map = dict(zip(dictionary, reduced_embeddings))
 
+
 # TODO - Remove global dependencies & extract these into query_utils package
 
 def similar_words(q, k=10):
@@ -83,6 +84,9 @@ def similar_svn(q, k=10, knn_count=100, c=0.1):
         matches.append((knn_result_mapping[0], knn_result_mapping[1], similarities[k]))
     
     return matches
+
+# Create client connection with Triton Inference Server
+model = TritonRemoteModel("http://triton-server:8100", "all-MiniLM-L6-v2")
 
 ###########################
 ### REST API
@@ -133,7 +137,7 @@ async def create_operation(ops: List[Operation]):
     print(ops)
 
     # TODO: Try "distilbert-base-uncased" model
-    tokenizer, model, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
+    tokenizer, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
     query_vectors = calc_query(ops, tokenizer, model, device)
     q = query_vectors[0]
 
@@ -150,7 +154,7 @@ async def scatter(ops: List[Operation]):
     result_vectors = []
     search_vectors = []
 
-    tokenizer, model, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
+    tokenizer, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
     query_vectors = calc_query(ops, tokenizer, model, device)
 
     for i, o in enumerate(ops):

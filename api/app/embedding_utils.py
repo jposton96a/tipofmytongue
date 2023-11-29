@@ -1,8 +1,11 @@
-import numpy as np
-import openai
+import typing
+
 import torch
-import torch.nn.functional as F
-from transformers import AutoTokenizer, AutoModel
+import numpy as np
+import tritonclient.http as httpclient
+
+from transformers import AutoTokenizer
+from urllib.parse import urlparse
 
 
 ###########################
@@ -56,15 +59,15 @@ def count_populated(a: list[np.ndarray], prefix: bool = True):
     """
     count_empty = 0
     for i, line in enumerate(a):
-      if line.nonzero()[0].size == 0 or np.any(np.isnan(line)):
-        # Count every time we encounter an empty cell
-        count_empty = count_empty + 1
+        if line.nonzero()[0].size == 0 or np.any(np.isnan(line)):
+            # Count every time we encounter an empty cell
+            count_empty = count_empty + 1
 
-        # `prefix`=True:
-        # Assumes all the populated elements are at the front, and
-        # anything after an empty index will also be empty
-        if prefix:
-          return i
+            # `prefix`=True:
+            # Assumes all the populated elements are at the front, and
+            # anything after an empty index will also be empty
+            if prefix:
+                return i
 
     # Return the final count
     return len(a) - count_empty
@@ -84,26 +87,66 @@ def load_models(model_name):
     """
     device = "cuda" if torch.cuda.is_available() else "cpu"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModel.from_pretrained(model_name).to(device)
-    return tokenizer, model, device
+    # model = AutoModel.from_pretrained(model_name).to(device)
+    return tokenizer, device
 
 
-def mean_pooling(model_output, attention_mask):
-  token_embeddings = model_output[0]
-  input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-  return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+# def mean_pooling(model_output, attention_mask):
+#     token_embeddings = model_output
+#     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+#     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
-
+# TODO: Integrate the tokenizer within Triton as well
 def create_embedding(text, tokenizer, model, device):
-  encoded_input = tokenizer(text, padding=True, truncation=True, return_tensors='pt').to(device)
+    encoded_input = tokenizer(text, padding=True, truncation=True, return_tensors='pt').to(device)
 
-  with torch.no_grad():
-    model_output = model(**encoded_input)
+    model_output = model(*[
+        np.array(encoded_input[key], dtype='int64') for key in encoded_input
+    ])
 
-  embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
-  embeddings = torch.squeeze(F.normalize(embeddings, p=2, dim=1)).cpu()
-  # response = openai.Embedding.create(model="text-embedding-ada-002", input=text)
-  embedding = np.array(embeddings)
-  # embedding = np.array(response["data"][0]["embedding"])
-  norm_embedding = embedding / np.sqrt((embedding**2).sum())
-  return norm_embedding
+    embedding = np.array(model_output)
+    # norm_embedding = embedding / np.sqrt((embedding**2).sum())
+    return embedding
+
+
+class TritonRemoteModel:
+    def __init__(self, url: str, model: str):
+        parsed_url = urlparse(url)
+        if parsed_url.scheme == "http":
+            self.client = httpclient.InferenceServerClient(parsed_url.netloc)
+            self.model_name = model
+            self.metadata = self.client.get_model_metadata(self.model_name)
+    
+    @property
+    def runtime(self):
+        return self.metadata.get("backend", self.metadata.get("platform"))
+
+    def __call__(self, *args, **kwargs) -> typing.Union[torch.Tensor, typing.Tuple[torch.Tensor, ...]]:
+        inputs = self._create_inputs(*args, **kwargs)
+        response = self.client.infer(model_name=self.model_name, inputs=inputs)
+        result = []
+        for output in self.metadata['outputs']:
+            tensor = torch.as_tensor(response.as_numpy(output['name']))
+            result.append(tensor)
+        return result[0][0] if len(result) == 1 else result
+
+    def _create_inputs(self, *args, **kwargs):
+        args_len, kwargs_len = len(args), len(kwargs)
+        if not args_len and not kwargs_len:
+            raise RuntimeError("No inputs provided.")
+        if args_len and kwargs_len:
+            raise RuntimeError("Cannot specify args and kwargs at the same time")
+        
+        placeholders = [
+            httpclient.InferInput(i['name'], [int(s) for s in args[index].shape], i['datatype']) for index, i in enumerate(self.metadata['inputs'])
+        ]
+        if args_len:
+            if args_len != len(placeholders):
+                raise RuntimeError(f"Expected {len(placeholders)} inputs, got {args_len}.")
+            for input, value in zip(placeholders, args):
+                input.set_data_from_numpy(value)
+        else:
+            for input in placeholders:
+                value = kwargs[input.name]
+                input.set_data_from_numpy(value)
+        return placeholders
