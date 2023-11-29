@@ -1,18 +1,18 @@
 import os
-from typing import List, Union
-from fastapi import FastAPI
+import json
+from typing import List
+
 import numpy as np
+from fastapi import FastAPI
 from pydantic import BaseModel
 from enum import Enum
-import json
-
-from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated
-from app.query_utils import find_similar_words
-from app.download_embeddings import download_embeddings
-
 from mangum import Mangum
 
+from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated, load_models, TritonRemoteModel
+from app.query_utils import find_similar_words
+from app.download_embeddings import download_embeddings
 from app.transform_utils import create_or_load_transform
+
 
 ###########################
 ### App Dependencies
@@ -50,6 +50,7 @@ transform_model, reduced_embeddings = create_or_load_transform(
 
 word_to_transform_map = dict(zip(dictionary, reduced_embeddings))
 
+
 # TODO - Remove global dependencies & extract these into query_utils package
 
 def similar_words(q, k=10):
@@ -84,6 +85,9 @@ def similar_svn(q, k=10, knn_count=100, c=0.1):
     
     return matches
 
+# Create client connection with Triton Inference Server
+model = TritonRemoteModel("http://triton-server:8100", "all-MiniLM-L6-v2")
+
 ###########################
 ### REST API
 ###########################
@@ -106,12 +110,12 @@ class Operation(BaseModel):
     results: list | None = None
     selected_words: list | None = None
 
-def calc_query(ops: List[Operation]):
-    q = create_embedding("king")
+def calc_query(ops: List[Operation], tokenizer, model, device):
+    q = create_embedding("king", tokenizer, model, device)
 
     query_vectors = [q]
     for o in ops:
-        op_embedding = create_embedding(o.description)
+        op_embedding = create_embedding(o.description, tokenizer, model, device)
         match o.function:
             case Function.start:
                 q = op_embedding
@@ -127,12 +131,14 @@ def calc_query(ops: List[Operation]):
 
     return query_vectors
 
-                
+
 @app.post("/operations")
 async def create_operation(ops: List[Operation]):
     print(ops)
 
-    query_vectors = calc_query(ops)
+    # TODO: Try "distilbert-base-uncased" model
+    tokenizer, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
+    query_vectors = calc_query(ops, tokenizer, model, device)
     q = query_vectors[0]
 
     results = similar_svn(q)
@@ -148,7 +154,8 @@ async def scatter(ops: List[Operation]):
     result_vectors = []
     search_vectors = []
 
-    query_vectors = calc_query(ops)
+    tokenizer, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
+    query_vectors = calc_query(ops, tokenizer, model, device)
 
     for i, o in enumerate(ops):
         search_vector = query_vectors[i]
@@ -173,7 +180,6 @@ async def scatter(ops: List[Operation]):
     }
     print(json.dumps(response))
     return response
-
 
 
 handler = Mangum(app, lifespan="off")

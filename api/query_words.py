@@ -1,4 +1,4 @@
-from app.embedding_utils import load_embeddings, load_word_dicts, count_populated, create_embedding
+from app.embedding_utils import load_embeddings, load_word_dicts, count_populated, create_embedding, load_models
 from app.query_utils import find_similar_words
 
 import numpy as np
@@ -8,7 +8,7 @@ import code
 ### Script
 ###########################
 
-cache_path = "res/word_embeddings_cache.npz.chk_non_norm_466503"
+cache_path = "res/word_embeddings_cache.npz"
 dict_path = "res/words.txt"
 
 embeddings = load_embeddings(cache_path)
@@ -61,7 +61,10 @@ def similar_svn(q, k=10, knn_count=100, c=0.1):
     
     return matches
 
-q = create_embedding("king") - create_embedding("man") + create_embedding("woman")
+tokenizer, model, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
+q = create_embedding("king", tokenizer, model, device) \
+  - create_embedding("man", tokenizer, model, device) \
+  + create_embedding("woman", tokenizer, model, device)
 print(similar_svn(q))
 # Drop into Python Shell
 # python -i foo.py

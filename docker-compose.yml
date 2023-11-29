@@ -2,22 +2,37 @@ version: '3.8'
 
 services:
   app:
-    build: 
+    build:
       context: ./api
     environment:
-        OPENAI_API_KEY: "<INSERT OPENAI_API_KEY>"
+        OPENAI_API_KEY: ""
     volumes:
-      - ./api/res/words.txt:/src/res/words.txt:ro
-      - ./api/res/word_embeddings_cache.npz:/src/res/word_embeddings_cache.npz:ro
-      - ./api/res/pca_transform.pkl:/src/res/pca_transform.pkl:ro
-      - ./api/res/pca_transform_weights.npy:/src/res/pca_transform_weights.npy:ro
-    ports:
-      - 8000:8000
+      - "./api/res:/src/res:ro"
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
 
-  ui_server: 
+  ui_server:
     build:
       context: ./webapp
     environment:
       API_SERVER: "app:8000" # Frontend Nginx router proxies to the "app" container
     ports:
-      - 8080:80
+      - "8080:80"
+
+  triton-server:
+    image: nvcr.io/nvidia/tritonserver:23.10-py3
+    volumes:
+      - "./triton:/models:rw"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: tritonserver --model-repository=/models --http-port 8100 --grpc-port 8101 --metrics-port 8102
