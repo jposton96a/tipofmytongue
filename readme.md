@@ -142,3 +142,4 @@ If you know a better way to make these steps easuer let me know.
 Also download the ONNX transformer model for `all-MiniLM-L6-v2` from [here](https://huggingface.co/optimum/all-MiniLM-L6-v2/tree/main) and place at `triton/transformer/1/model.onnx`.
 
 To rebuild the embeddings cache you will need to launch `triton-server` using `docker compose up -d triton-server` but expose port 8100 as well in the docker-compose file.
+       

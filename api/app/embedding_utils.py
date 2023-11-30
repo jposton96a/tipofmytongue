@@ -81,20 +81,30 @@ class TritonRemoteModel:
     def __init__(self, url: str, model: str):
         parsed_url = urlparse(url)
         if parsed_url.scheme == "http":
-            from tritonclient.http import InferenceServerClient
+            from tritonclient.http import InferenceServerClient, InferInput
 
-            self.protocall = "http"
             self.client = InferenceServerClient(parsed_url.netloc)
             self.model_name = model
             self.metadata = self.client.get_model_metadata(self.model_name)
 
-        else:
-            from tritonclient.grpc import InferenceServerClient
+            def create_input_placeholders() -> typing.List[InferInput]:
+                return [
+                    InferInput(i['name'], [int(s) for s in i['shape']], i['datatype']) for i in self.metadata['inputs']
+                ]
 
-            self.protocall = "grpc"
+        else:
+            from tritonclient.grpc import InferenceServerClient, InferInput
+
             self.client = InferenceServerClient(parsed_url.netloc)
             self.model_name = model
             self.metadata = self.client.get_model_metadata(self.model_name, as_json=True)
+
+            def create_input_placeholders() -> typing.List[InferInput]:
+                return [
+                    InferInput(i['name'], [int(s) for s in i['shape']], i['datatype']) for i in self.metadata['inputs']
+                ]
+
+        self._create_input_placeholders_fn = create_input_placeholders
     
     @property
     def runtime(self):
@@ -105,7 +115,7 @@ class TritonRemoteModel:
         response = self.client.infer(model_name=self.model_name, inputs=inputs)
         result = []
         for output in self.metadata['outputs']:
-            tensor = torch.as_tensor(response.as_numpy(output['name']))
+            tensor = torch.Tensor(response.as_numpy(output['name']))
             result.append(tensor)
         return result[0][0] if len(result) == 1 else result
 
@@ -116,15 +126,7 @@ class TritonRemoteModel:
         if args_len and kwargs_len:
             raise RuntimeError("Cannot specify args and kwargs at the same time")
         
-        if self.protocall == "http":
-            from tritonclient.http import InferInput
-        else:
-            from tritonclient.grpc import InferInput
-    
-        placeholders = [
-            InferInput(i['name'], [int(s) for s in args[index].shape], i['datatype']) for index, i in enumerate(self.metadata['inputs'])
-        ]
-
+        placeholders = self._create_input_placeholders_fn()
         if args_len:
             if args_len != len(placeholders):
                 raise RuntimeError(f"Expected {len(placeholders)} inputs, got {args_len}.")

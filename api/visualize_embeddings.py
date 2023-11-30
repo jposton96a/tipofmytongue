@@ -1,3 +1,6 @@
+from datetime import datetime
+startTime = datetime.now()
+
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
@@ -58,3 +61,4 @@ ax.set_ylabel('PCA2')
 ax.set_zlabel('PCA3')
 # plt.show()
 plt.savefig('plot.png')
+print(datetime.now() - startTime)

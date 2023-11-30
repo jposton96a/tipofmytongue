@@ -51,7 +51,7 @@ else:
 lines_subset = lines[start:end]
 del(lines)
 
-model = TritonRemoteModel("grpc://localhost:8101", "all-MiniLM-L6-v2")
+model = TritonRemoteModel("http://localhost:8100", "all-MiniLM-L6-v2")
 
 # iterate over the sublist of lines based on the indices
 for i, line in enumerate(lines_subset):
