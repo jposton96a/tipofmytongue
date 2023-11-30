@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
-from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated, load_models
+from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated, load_models, TritonRemoteModel
 from app.transform_utils import create_or_load_transform
 
 
@@ -30,8 +30,8 @@ transform_model, reduced_embeddings = create_or_load_transform(
     transformed_embeddings_path=transformed_embeddings_path
 )
 
-tokenizer, model, device = load_models()
-input_vector = create_embedding("king", tokenizer, model, device)
+model = TritonRemoteModel("http://localhost:8100", "all-MiniLM-L6-v2")
+input_vector = create_embedding("king", model)
 transformed_search_vector = transform_model.transform(input_vector.reshape(1, -1))
 
 print (transformed_search_vector)

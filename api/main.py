@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from enum import Enum
 from mangum import Mangum
 
-from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated, load_models, TritonRemoteModel
+from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated, TritonRemoteModel
 from app.query_utils import find_similar_words
 from app.download_embeddings import download_embeddings
 from app.transform_utils import create_or_load_transform
@@ -110,12 +110,12 @@ class Operation(BaseModel):
     results: list | None = None
     selected_words: list | None = None
 
-def calc_query(ops: List[Operation], tokenizer, model, device):
-    q = create_embedding("king", tokenizer, model, device)
+def calc_query(ops: List[Operation], model):
+    q = create_embedding("king", model)
 
     query_vectors = [q]
     for o in ops:
-        op_embedding = create_embedding(o.description, tokenizer, model, device)
+        op_embedding = create_embedding(o.description, model)
         match o.function:
             case Function.start:
                 q = op_embedding
@@ -137,8 +137,7 @@ async def create_operation(ops: List[Operation]):
     print(ops)
 
     # TODO: Try "distilbert-base-uncased" model
-    tokenizer, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
-    query_vectors = calc_query(ops, tokenizer, model, device)
+    query_vectors = calc_query(ops, model)
     q = query_vectors[0]
 
     results = similar_svn(q)
@@ -154,8 +153,7 @@ async def scatter(ops: List[Operation]):
     result_vectors = []
     search_vectors = []
 
-    tokenizer, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
-    query_vectors = calc_query(ops, tokenizer, model, device)
+    query_vectors = calc_query(ops, model)
 
     for i, o in enumerate(ops):
         search_vector = query_vectors[i]

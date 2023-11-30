@@ -131,3 +131,14 @@ Note - this was intended to be a "weekend project" & as such, many shortcuts wer
     - Defined paramaters as part of the data model that were never used `id`, `selected_words`, etc
     - Used the incorrect HTTP verbs (neither API is writable API). Both should be `GET` requests, but I didn't want to give up using the HTTP `body`
     - Used the same data model for input & output of the `/operations` API
+
+## Using Triton on CPU
+If you're starting up all the services you will need to make two changes:
+1. In `docker-compose.yml` remove the deploy key and everything under it.
+2. In every `config.pbtxt` under the triton model repository change every instance_group `KIND_GPU` to `KIND_CPU`.
+
+If you know a better way to make these steps easuer let me know.
+
+Also download the ONNX transformer model for `all-MiniLM-L6-v2` from [here](https://huggingface.co/optimum/all-MiniLM-L6-v2/tree/main) and place at `triton/transformer/1/model.onnx`.
+
+To rebuild the embeddings cache you will need to launch `triton-server` using `docker compose up -d triton-server` but expose port 8100 as well in the docker-compose file.
