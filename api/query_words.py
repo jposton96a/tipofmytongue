@@ -1,8 +1,9 @@
-from app.embedding_utils import load_embeddings, load_word_dicts, count_populated, create_embedding, load_models
-from app.query_utils import find_similar_words
-
-import numpy as np
 import code
+import numpy as np
+
+from app.query_utils import find_similar_words
+from app.embedding_utils import load_embeddings, load_word_dicts, count_populated, create_embedding, TritonRemoteModel
+
 
 ###########################
 ### Script
@@ -61,10 +62,8 @@ def similar_svn(q, k=10, knn_count=100, c=0.1):
     
     return matches
 
-tokenizer, model, device = load_models('sentence-transformers/all-MiniLM-L6-v2')
-q = create_embedding("king", tokenizer, model, device) \
-  - create_embedding("man", tokenizer, model, device) \
-  + create_embedding("woman", tokenizer, model, device)
+model = TritonRemoteModel("grpc://localhost:8101", "all-MiniLM-L6-v2")
+q = create_embedding("king", model) - create_embedding("man", model) + create_embedding("woman", model)
 print(similar_svn(q))
 # Drop into Python Shell
 # python -i foo.py

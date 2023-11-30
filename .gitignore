@@ -1,3 +1,4 @@
 # model can be downloaded from https://huggingface.co/optimum/all-MiniLM-L6-v2/tree/main
 # place model at ./triton/transformer/1/model.onnx
 triton/**/*.onnx
+__pycache__/

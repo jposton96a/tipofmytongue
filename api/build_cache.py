@@ -1,7 +1,7 @@
 import os.path
 import numpy as np
 
-from app.embedding_utils import load_models, TritonRemoteModel
+from app.embedding_utils import TritonRemoteModel
 
 
 out_cache_path = "res/word_embeddings_cache.npz"
@@ -51,20 +51,15 @@ else:
 lines_subset = lines[start:end]
 del(lines)
 
-# client = OpenAI()
-model = TritonRemoteModel("http://localhost:8100", "all-MiniLM-L6-v2")
-tokenizer, device = load_models("sentence-transformers/all-MiniLM-L6-v2")
+model = TritonRemoteModel("grpc://localhost:8101", "all-MiniLM-L6-v2")
 
 # iterate over the sublist of lines based on the indices
 for i, line in enumerate(lines_subset):
     # strip the newline character and assign it to text
     text = line.rstrip("\n")
     text_id = start + i
-    encoded_input = tokenizer(text, padding=True, truncation=True, return_tensors='pt')
-    # print(encoded_input)
-    model_output = model(*[
-        np.array(encoded_input[key], dtype='int64') for key in encoded_input
-    ])
+
+    model_output = model(np.array([str.encode(text)]))
 
     embedding = np.array(model_output)
     embeddings[text_id] = embedding

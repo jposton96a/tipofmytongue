@@ -1,11 +1,8 @@
 import typing
+from urllib.parse import urlparse
 
 import torch
 import numpy as np
-import tritonclient.http as httpclient
-
-from transformers import AutoTokenizer
-from urllib.parse import urlparse
 
 
 ###########################
@@ -73,27 +70,31 @@ def count_populated(a: list[np.ndarray], prefix: bool = True):
     return len(a) - count_empty
 
 
-# def mean_pooling(model_output, attention_mask):
-#     # copied from huggingface
-#     token_embeddings = model_output
-#     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-#     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
-
-
 def create_embedding(text, model):
     model_output = model(np.array([str.encode(text)]))
     embedding = np.array(model_output)
-    # norm_embedding = embedding / np.sqrt((embedding**2).sum())
     return embedding
+    # norm_embedding = embedding / np.sqrt((embedding**2).sum())
 
 
 class TritonRemoteModel:
     def __init__(self, url: str, model: str):
         parsed_url = urlparse(url)
         if parsed_url.scheme == "http":
-            self.client = httpclient.InferenceServerClient(parsed_url.netloc)
+            from tritonclient.http import InferenceServerClient
+
+            self.protocall = "http"
+            self.client = InferenceServerClient(parsed_url.netloc)
             self.model_name = model
             self.metadata = self.client.get_model_metadata(self.model_name)
+
+        else:
+            from tritonclient.grpc import InferenceServerClient
+
+            self.protocall = "grpc"
+            self.client = InferenceServerClient(parsed_url.netloc)
+            self.model_name = model
+            self.metadata = self.client.get_model_metadata(self.model_name, as_json=True)
     
     @property
     def runtime(self):
@@ -115,9 +116,15 @@ class TritonRemoteModel:
         if args_len and kwargs_len:
             raise RuntimeError("Cannot specify args and kwargs at the same time")
         
+        if self.protocall == "http":
+            from tritonclient.http import InferInput
+        else:
+            from tritonclient.grpc import InferInput
+    
         placeholders = [
-            httpclient.InferInput(i['name'], [int(s) for s in args[index].shape], i['datatype']) for index, i in enumerate(self.metadata['inputs'])
+            InferInput(i['name'], [int(s) for s in args[index].shape], i['datatype']) for index, i in enumerate(self.metadata['inputs'])
         ]
+
         if args_len:
             if args_len != len(placeholders):
                 raise RuntimeError(f"Expected {len(placeholders)} inputs, got {args_len}.")

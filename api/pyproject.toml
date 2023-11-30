@@ -14,10 +14,9 @@ python-dotenv = "^1.0.0"
 mangum = "^0.17.0"
 boto3 = "^1.28.65"
 scikit-learn = "^1.3.2"
-matplotlib = "^3.8.1"
-transformers = "^4.35.2"
+matplotlib = "^3.8.2"
 torch = "^2.1.1"
-tritonclient = {extras = ["http"], version = "^2.39.0"}
+tritonclient = {extras = ["all"], version = "^2.39.0"}
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md
