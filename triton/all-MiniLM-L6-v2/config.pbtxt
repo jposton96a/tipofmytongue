@@ -1,22 +1,12 @@
 name: "all-MiniLM-L6-v2"
-platform: "onnxruntime_onnx"
-max_batch_size : 0
+platform: "ensemble"
+max_batch_size: 0
 
 input [
   {
-    name: "input_ids"
-    data_type: TYPE_INT64
-    dims: [ -1, -1 ]
-  },
-  {
-    name: "attention_mask"
-    data_type: TYPE_INT64
-    dims: [ -1, -1 ]
-  },
-  {
-    name: "token_type_ids"
-    data_type: TYPE_INT64
-    dims: [ -1, -1 ]
+    name: "INPUT_TEXT"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
   }
 ]
 
@@ -28,47 +18,50 @@ output [
   }
 ]
 
-instance_group [
-  {
-    count: 1
-    kind: KIND_GPU
-  }
-]
-
-model_warmup [
-  {
-    name : "all-MiniLM-L6-v2"
-    batch_size: 1
-    count: 3
-    inputs {
-      key: "input_ids"
-      value: {
-        data_type: TYPE_INT64
-        dims: 1
-        dims: 3
-        input_data_file: "input_ids"
+ensemble_scheduling {
+  step [
+    {
+      model_name: "tokenizer"
+      model_version: -1
+      input_map {
+        key: "INPUT_TEXT"
+        value: "INPUT_TEXT"
+      }
+      output_map {
+        key: "input_ids"
+        value: "input_ids"
+      }
+      output_map {
+        key: "attention_mask"
+        value: "attention_mask"
+      }
+      output_map {
+        key: "token_type_ids"
+        value: "token_type_ids"
+      }
+    },
+    {
+      model_name: "transformer"
+      model_version: -1
+      input_map {
+        key: "input_ids"
+        value: "input_ids"
+      }
+      input_map {
+        key: "attention_mask"
+        value: "attention_mask"
+      }
+      input_map {
+        key: "token_type_ids"
+        value: "token_type_ids"
+      }
+      output_map {
+        key: "924"
+        value: "924"
       }
     }
-    inputs {
-      key: "token_type_ids"
-      value: {
-        data_type: TYPE_INT64
-        dims: 1
-        dims: 3
-        input_data_file: "token_type_ids"
-      }
-    }
-    inputs {
-      key: "attention_mask"
-      value: {
-        data_type: TYPE_INT64
-        dims: 1
-        dims: 3
-        input_data_file: "attention_mask"
-      }
-    }
-  }
-]
+  ]
+}
 
 version_policy: { 
   latest: { num_versions: 1 }

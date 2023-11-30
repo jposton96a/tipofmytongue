@@ -73,37 +73,15 @@ def count_populated(a: list[np.ndarray], prefix: bool = True):
     return len(a) - count_empty
 
 
-def load_models(model_name):
-    """
-    Load models to specified device for future requests
-
-    Args:
-      - model_name: model name from Huggingface
-
-    Returns:
-      - tokenizer: pretrained tokenizer
-      - model: pretrained model loaded to specified device
-      - device: device to load model on (e.g. nvidia CUDA GPU)
-    """
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    # model = AutoModel.from_pretrained(model_name).to(device)
-    return tokenizer, device
-
-
 # def mean_pooling(model_output, attention_mask):
+#     # copied from huggingface
 #     token_embeddings = model_output
 #     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
 #     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
-# TODO: Integrate the tokenizer within Triton as well
-def create_embedding(text, tokenizer, model, device):
-    encoded_input = tokenizer(text, padding=True, truncation=True, return_tensors='pt').to(device)
 
-    model_output = model(*[
-        np.array(encoded_input[key], dtype='int64') for key in encoded_input
-    ])
-
+def create_embedding(text, model):
+    model_output = model(np.array([str.encode(text)]))
     embedding = np.array(model_output)
     # norm_embedding = embedding / np.sqrt((embedding**2).sum())
     return embedding
