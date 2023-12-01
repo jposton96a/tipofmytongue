@@ -44,14 +44,13 @@ if os.path.isfile(out_cache_path):
     start=checkpoint
 else:
     print("Building cache from scratch...")
-    # embeddings = np.empty((len(lines), 1536))
-    embeddings = np.empty((len(lines), 384))
+    embeddings = np.empty((len(lines), 1024))
 
 # Free up some memory
 lines_subset = lines[start:end]
 del(lines)
 
-model = TritonRemoteModel("http://localhost:8100", "all-MiniLM-L6-v2")
+model = TritonRemoteModel("http://localhost:8100", "gte-large")
 
 # iterate over the sublist of lines based on the indices
 for i, line in enumerate(lines_subset):
@@ -60,7 +59,6 @@ for i, line in enumerate(lines_subset):
     text_id = start + i
 
     model_output = model(np.array([str.encode(text)]))
-
     embedding = np.array(model_output)
     embeddings[text_id] = embedding
 

@@ -86,7 +86,7 @@ def similar_svn(q, k=10, knn_count=100, c=0.1):
     return matches
 
 # Create client connection with Triton Inference Server
-model = TritonRemoteModel("http://triton-server:8100", "all-MiniLM-L6-v2")
+model = TritonRemoteModel("http://triton-server:8100", "gte-large")
 
 ###########################
 ### REST API

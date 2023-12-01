@@ -3,3 +3,4 @@
 *.onnx
 __pycache__/
 **/__pycache__/
+triton2/
