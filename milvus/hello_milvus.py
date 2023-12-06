@@ -75,6 +75,8 @@ entities = [
     rng.random(num_entities).tolist(),  # field random, only supports list
     rng.random((num_entities, dim)),    # field embeddings, supports numpy.ndarray and list
 ]
+print(entities)
+print(len(entities[1]))
 
 insert_result = hello_milvus.insert(entities)
 

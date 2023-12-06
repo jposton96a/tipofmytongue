@@ -1,3 +1,4 @@
+# requirements: pip install optimum[onnxruntime]
 import numpy as np
 
 

@@ -45,17 +45,19 @@ if not collection_exists:
 
     model = TritonRemoteModel("http://localhost:8100", "gte-large")
 
-    embeddings = np.empty((len(lines), 1024))
+    # embeddings = np.empty((len(lines), 1024))
     for i, line in enumerate(lines):
         text = line.rstrip("\n")
 
         model_output = model(np.array([str.encode(text)]))
 
-        embedding = np.array(model_output)
-        embeddings[i] = embedding
+        insert_result = tiptest.insert([
+            [text],
+            [model_output.numpy()]
+        ])
     
-    insert_result = tiptest.insert(embeddings)
     tiptest.flush()
     print(f"Number of entities in Milvus: {tiptest.num_entities}")
 else:
+    utility.drop_collection("tiptest")
     print("exists")

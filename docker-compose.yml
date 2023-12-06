@@ -28,10 +28,3 @@ services:
       - "./triton:/models:rw"
     ports:
       - "8100:8100"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]

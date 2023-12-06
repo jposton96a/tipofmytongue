@@ -1,3 +1,4 @@
+# requirements: pip install tritonclient[all]
 import typing
 from urllib.parse import urlparse
 

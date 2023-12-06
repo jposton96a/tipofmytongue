@@ -31,7 +31,7 @@ output [
 instance_group [
   {
     count: 1
-    kind: KIND_GPU
+    kind: KIND_CPU
   }
 ]
 
@@ -77,3 +77,9 @@ version_policy: {
 response_cache { 
   enable: True 
 }
+
+optimization { execution_accelerators {
+  cpu_execution_accelerator : [ {
+    name : "openvino"
+  }]
+}}
