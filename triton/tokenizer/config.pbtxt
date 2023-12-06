@@ -4,11 +4,11 @@ max_batch_size: 0
 
 parameters: {
   key: "REPOSITORY"
-  value: { string_value: "sentence-transformers" }
+  value: { string_value: "thenlper" }
 }
 parameters: {
   key: "MODEL_NAME"
-  value: { string_value: "all-MiniLM-L6-v2" }
+  value: { string_value: "gte-large" }
 }
 
 input [

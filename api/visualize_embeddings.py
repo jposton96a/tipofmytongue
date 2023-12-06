@@ -1,6 +1,3 @@
-from datetime import datetime
-startTime = datetime.now()
-
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
@@ -33,7 +30,7 @@ transform_model, reduced_embeddings = create_or_load_transform(
     transformed_embeddings_path=transformed_embeddings_path
 )
 
-model = TritonRemoteModel("grpc://localhost:8101", "all-MiniLM-L6-v2")
+model = TritonRemoteModel("http://localhost:8100", "gte-large")
 input_vector = create_embedding("king", model)
 transformed_search_vector = transform_model.transform(input_vector.reshape(1, -1))
 
@@ -61,4 +58,3 @@ ax.set_ylabel('PCA2')
 ax.set_zlabel('PCA3')
 # plt.show()
 plt.savefig('plot.png')
-print(datetime.now() - startTime)
