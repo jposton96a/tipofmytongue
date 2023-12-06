@@ -26,5 +26,4 @@ services:
       context: ./triton
     volumes:
       - "./triton:/models:rw"
-    ports:
-      - "8100:8100"
+    network_mode: "host"

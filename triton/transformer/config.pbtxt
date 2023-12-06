@@ -28,13 +28,6 @@ output [
   }
 ]
 
-instance_group [
-  {
-    count: 1
-    kind: KIND_CPU
-  }
-]
-
 model_warmup [
   {
     name : "transformer"
@@ -67,6 +60,13 @@ model_warmup [
         input_data_file: "attention_mask"
       }
     }
+  }
+]
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_CPU
   }
 ]
 

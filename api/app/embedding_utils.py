@@ -118,7 +118,7 @@ class TritonRemoteModel:
         for output in self.metadata['outputs']:
             tensor = torch.Tensor(response.as_numpy(output['name']))
             result.append(tensor)
-        return result[0][0] if len(result) == 1 else result
+        return result[0] if len(result) == 1 else result
 
     def _create_inputs(self, *args, **kwargs):
         args_len, kwargs_len = len(args), len(kwargs)

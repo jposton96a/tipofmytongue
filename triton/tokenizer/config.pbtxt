@@ -15,7 +15,7 @@ input [
   {
     name: "INPUT_TEXT"
     data_type: TYPE_STRING
-    dims: [ 1 ]
+    dims: [ -1 ]
   }
 ]
 
@@ -37,13 +37,6 @@ output [
   }
 ]
 
-instance_group [
-  {
-    count: 1
-    kind: KIND_CPU
-  }
-]
-
 model_warmup [
 {
     name : "tokenizer"
@@ -58,6 +51,13 @@ model_warmup [
       }
     }
 }]
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_CPU
+  }
+]
 
 version_policy: { 
   latest: { num_versions: 1 }

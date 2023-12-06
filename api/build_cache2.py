@@ -1,11 +1,15 @@
 import pymilvus
+import math
+import torch
 import numpy as np
 
 from pymilvus import (
     connections,
     utility,
-    FieldSchema, CollectionSchema, DataType,
-    Collection,
+    FieldSchema,
+    CollectionSchema,
+    DataType,
+    Collection
 )
 
 from app.embedding_utils import TritonRemoteModel
@@ -26,6 +30,7 @@ def count_populated(a):
 connections.connect(alias="default", host="localhost", port="19530")
 
 dim = 1024
+batch_size = 16
 collection_name = 'tiptest'
 
 collection_exists = utility.has_collection(collection_name)
@@ -39,21 +44,22 @@ if not collection_exists:
     tiptest = Collection(name="tiptest", schema=schema, using="default", consistency_level="Strong")
 
     # open the file that contains the words
-    file = open("res/words.txt", "r")
-    lines = file.readlines()
-    file.close()
+    with open("res/words.txt", "r") as file:
+        words = file.read().splitlines()
+
+    num_words = len(words)
+    batches = math.ceil(num_words / batch_size)
 
     model = TritonRemoteModel("http://localhost:8100", "gte-large")
 
-    # embeddings = np.empty((len(lines), 1024))
-    for i, line in enumerate(lines):
-        text = line.rstrip("\n")
+    for batch in range(0, batches, batch_size):
+        text = words[batch:batch+batch_size]
 
-        model_output = model(np.array([str.encode(text)]))
+        model_output = model(np.array([str.encode(word) for word in text]))
 
         insert_result = tiptest.insert([
-            [text],
-            [model_output.numpy()]
+            text,
+            model_output.numpy()
         ])
     
     tiptest.flush()
