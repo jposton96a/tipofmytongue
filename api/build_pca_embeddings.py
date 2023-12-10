@@ -1,3 +1,4 @@
+import sys
 from pymilvus import (
     connections,
     utility,
@@ -23,7 +24,7 @@ if __name__ == "__main__":
         embedding_collection.load()
     except MilvusException as e:
         print(f"Could not establish connection to Milvus: {e}")
-        raise
+        sys.ext(0)
 
     if not utility.has_collection(collection_name):
         collection = create_milvus_collection(collection_name, embedding_dims)
@@ -74,7 +75,7 @@ if __name__ == "__main__":
 
             case "3": # Remove existing Milvus collection
                 utility.drop_collection(collection_name)
-                print(f"Successfully remove collection `{collection_name}`")
+                print(f"Successfully removed collection `{collection_name}`")
 
             case "4": # Exit program
                 exit()

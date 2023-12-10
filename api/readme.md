@@ -6,7 +6,7 @@ This directory contains the scripts & API implementation used to run the backend
 ### Dependencies
 The server relies on a list of words & a pre-computed PCA model file. Each of these must be created before starting the server:
 
-1. Vocabulary List `res/words.txt` - (created in Step #1) a list of words to query against
+1. Vocabulary list `res/words.txt` - (created in Step #1) a list of words to query against
 2. PCA Transform Model `res/pca_transform.pkl` - (created in Step #6) the trained PCA model
 
 ## Development Setup
@@ -28,19 +28,19 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     ```bash
     cd app/
     python triton_utils.py
-    mv model/model.onnx ../../triton/transformer/1/
+    mv model/model_quantized.onnx ../../triton/transformer/1/model.onnx
     rm -rf model/
     ```
     Triton should already be prepared after this step, if you have trouble look in the `triton/` directory. For more information about Triton see [Triton readme](../triton/readme.md).
 
-4. Start Milvus and Triton services:
+4. Start Milvus and Triton services (triton-server will need time to build):
     ```bash
     cd ..
     docker compose up -d etcd minio standalone triton-server
     ```
     If you have issues, remove the `-d` flag to troubleshoot.
 
-5. Build the embedding cache into Milvus  (this step will take the longest ~20-80 minutes):
+5. Build the embedding cache into Milvus  (this step will take the longest ~20-80 minutes depending on hardware):
     ```bash
     python build_embeddings.py
     ```
@@ -62,8 +62,9 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     # as a side effect, this renders all processed embeddings into `plot.png` 
     python visualize_embeddings.py
     ```
+## Deployment
 
-9. Run the API server ()
+1. Run the API server ()
     ```bash
     cd ..
 
@@ -74,7 +75,7 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     docker compose up -d
     ```
 
-10. Access the frontend at http://localhost:8080
+2. Access the frontend at http://localhost:8080
 
 ### Resources
 
