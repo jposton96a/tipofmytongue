@@ -1,40 +1,68 @@
+import sys
+import joblib
+import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
+from pymilvus import connections, Collection, MilvusException
 
-from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated, TritonRemoteModel
-from app.transform_utils import create_or_load_transform
+from app.embedding_utils import create_embedding
+from app.query_utils import k_similar_words
+from app.triton_utils import TritonRemoteModel
 
 
-# cache_path = "res/chatgpt_embedding_subset_100.npz"
-cache_path = "res/word_embeddings_cache.npz"
-dict_path = "res/words.txt"
+
+###########################
+### App Dependencies
+###########################
+
+input_word = "aliens"
+num_points = 50
 
 transform_model_path = "res/pca_transform.pkl"
-transformed_embeddings_path = "res/pca_transformed_embeddings.npy"
+embedding_collection_name = "tipofmytongue"
+pca_collection_name = "tipofmytongue_pca"
 
-embeddings = load_embeddings(cache_path)
-dictionary = load_word_dicts(dict_path)
-print(f"Loaded {len(dictionary)} words from {dict_path}")
+milvus_uri = "grpc://localhost:19530"
+triton_uri = "grpc://localhost:8001"
+model_name = "gte-large"
+connection_timeout = 10
 
-# The length of the embeddings will always match the dictionary.
-# Some or all of the indexes may be populated
-embeddings_count = count_populated(embeddings)
-print(f"Loaded {embeddings_count} embeddings from {cache_path}")
-if embeddings_count == 0:
-    print("Cache empty! Exiting")
-    exit(-1)
+# Establish connection to Milvus and Triton service
+try:
+    connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
+    model = TritonRemoteModel(url=triton_uri, model_name=model_name)
+except MilvusException as e:
+    print(f"Could not establish connection to Milvus: {e}")
+    sys.exit(0)
+except ConnectionRefusedError as e:
+    print(f"Could not establish connection to Triton: {e}")
+    sys.exit(0)
 
-transform_model, reduced_embeddings = create_or_load_transform(
-    embeddings=embeddings, 
-    transform_model_path=transform_model_path, 
-    transformed_embeddings_path=transformed_embeddings_path
-)
+embedding_collection = Collection(embedding_collection_name)
+embedding_collection.load()
 
-model = TritonRemoteModel("http://localhost:8000", "gte-large")
-input_vector = create_embedding("king", model)
-transformed_search_vector = transform_model.transform(input_vector.reshape(1, -1))
+pca_collection = Collection(pca_collection_name)
+pca_collection.load()
 
-print (transformed_search_vector)
+try:
+    transform_model = joblib.load(transform_model_path)
+except (FileNotFoundError, IndexError) as e:
+    print(f"Error loading PCA model: {e}")
+    print("Make sure you have defined a model and the file path is correct.")
+    print("Run build_pca_embeddings.py to create and fit a PCA model.")
+    sys.exit(0)
+
+
+
+###########################
+### Visualization
+###########################
+
+# Create input vector and 100 similar word embeddings to plot
+input_vector = create_embedding(input_word, model)
+similar_words = k_similar_words(input_vector, embedding_collection, pca_collection, k=num_points)
+words = [word[0] for word in similar_words]
+reduced_embeddings = np.array([word[1] for word in similar_words])
+transformed_search_vector = transform_model.transform(input_vector.reshape(1, -1))[0]
 
 # Create a 3D scatter plot
 fig = plt.figure(figsize=(12, 8))
@@ -45,16 +73,15 @@ x, y, z = reduced_embeddings[:, 0], reduced_embeddings[:, 1], reduced_embeddings
 ax.scatter(x, y, z)
 
 # Plot the search vector
-ax.scatter(transformed_search_vector[0][0], transformed_search_vector[0][1], transformed_search_vector[0][2], color='red', label='Search Vector')
-
+ax.scatter(transformed_search_vector[0], transformed_search_vector[1], transformed_search_vector[2], color='red', label='Search Vector')
 
 # Label each point with its corresponding word
-for i, word in enumerate(dictionary[:embeddings_count]):
+for i, word in enumerate(words):
     ax.text(x[i], y[i], z[i], word, size=10, zorder=1, color='k')
 
-ax.set_title('3D PCA of Word Embeddings')
-ax.set_xlabel('PCA1')
-ax.set_ylabel('PCA2')
-ax.set_zlabel('PCA3')
-# plt.show()
-plt.savefig('plot.png')
+ax.set_title(f"3D PCA similarity word embeddings for '{input_word.upper()}'")
+ax.set_xlabel("PCA1")
+ax.set_ylabel("PCA2")
+ax.set_zlabel("PCA3")
+plt.savefig("plot.png")
+print("Results save to `plot.png`")

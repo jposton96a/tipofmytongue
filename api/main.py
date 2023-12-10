@@ -1,5 +1,4 @@
 import sys
-import json
 import joblib
 from typing import List
 
@@ -118,6 +117,7 @@ async def create_operation(ops: List[Operation]):
 
 @app.post("/scatter")
 async def scatter(ops: List[Operation]):
+    # reset vectors after reset
     if len(ops) == 1:
         global_data["search_vectors"] = []
         global_data["result_vectors"] = []
