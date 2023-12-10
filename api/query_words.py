@@ -62,7 +62,7 @@ def similar_svn(q, k=10, knn_count=100, c=0.1):
     
     return matches
 
-model = TritonRemoteModel("http://localhost:8100", "all-MiniLM-L6-v2")
+model = TritonRemoteModel("http://localhost:8000", "all-MiniLM-L6-v2")
 q = create_embedding("king", model) - create_embedding("man", model) + create_embedding("woman", model)
 print(similar_svn(q))
 # Drop into Python Shell

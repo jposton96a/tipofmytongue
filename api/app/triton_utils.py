@@ -1,5 +1,8 @@
-# requirements: pip install optimum[onnxruntime]
-# requirements: pip install tritonclient[all]
+"""
+requirements:
+    pip install optimum[onnxruntime]
+    pip install tritonclient[all]
+"""
 import torch
 import typing
 import numpy as np
@@ -8,13 +11,13 @@ from urllib.parse import urlparse
 
 
 class TritonRemoteModel:
-    def __init__(self, url: str, model: str):
+    def __init__(self, url: str, model_name: str):
         parsed_url = urlparse(url)
         if parsed_url.scheme == "http":
             from tritonclient.http import InferenceServerClient, InferInput
 
             self.client = InferenceServerClient(parsed_url.netloc)
-            self.model_name = model
+            self.model_name = model_name
             self.metadata = self.client.get_model_metadata(self.model_name)
 
             def create_input_placeholders(batch_size) -> typing.List[InferInput]:
@@ -26,7 +29,7 @@ class TritonRemoteModel:
             from tritonclient.grpc import InferenceServerClient, InferInput
 
             self.client = InferenceServerClient(parsed_url.netloc)
-            self.model_name = model
+            self.model_name = model_name
             self.metadata = self.client.get_model_metadata(self.model_name, as_json=True)
 
             def create_input_placeholders(batch_size) -> typing.List[InferInput]:
@@ -45,7 +48,7 @@ class TritonRemoteModel:
         response = self.client.infer(model_name=self.model_name, inputs=inputs)
         result = []
         for output in self.metadata['outputs']:
-            tensor = torch.Tensor(response.as_numpy(output['name']))
+            tensor = torch.tensor(response.as_numpy(output['name']))
             result.append(tensor)
         return result[0] if len(result) == 1 else result
 
@@ -70,11 +73,11 @@ class TritonRemoteModel:
         return placeholders
 
 
-def convert_model_to_onnx(model_id, save=False, save_path=None):
+def convert_model_to_onnx(model_id, save_path=None):
     from optimum.onnxruntime import ORTModelForFeatureExtraction
 
     model = ORTModelForFeatureExtraction.from_pretrained(model_id, from_transformers=True)
-    if save:
+    if save_path:
         model.save_pretrained(save_path)
 
     return model
@@ -100,6 +103,8 @@ def quantize_model(model_id, save_path):
 
 
 def create_warmup_file(save_path, np_array=None, string=False, img_path=None):
+    # For Triton model warmup, typical model input is a np.array, string, or image
+    # The warmup files must be in bytes, so use this function to create them.
     if hasattr(np_array, 'shape'):
         np_array.tofile(save_path)
     elif isinstance(img_path, str):

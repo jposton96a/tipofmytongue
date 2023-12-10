@@ -30,7 +30,7 @@ transform_model, reduced_embeddings = create_or_load_transform(
     transformed_embeddings_path=transformed_embeddings_path
 )
 
-model = TritonRemoteModel("http://localhost:8100", "gte-large")
+model = TritonRemoteModel("http://localhost:8000", "gte-large")
 input_vector = create_embedding("king", model)
 transformed_search_vector = transform_model.transform(input_vector.reshape(1, -1))
 
