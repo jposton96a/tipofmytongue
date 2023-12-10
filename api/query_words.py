@@ -1,76 +1,51 @@
+import sys
 import code
-import numpy as np
+from pymilvus import connections, Collection, MilvusException
 
-from app.query_utils import find_similar_words
-from app.embedding_utils import load_embeddings, load_word_dicts, count_populated, create_embedding, TritonRemoteModel
+from app.embedding_utils import create_embedding
+from app.query_utils import k_similar_words
+from app.triton_utils import TritonRemoteModel
+
+
+###########################
+### App Dependencies
+###########################
+
+transform_model_path = "res/pca_transform.pkl"
+embedding_collection_name = "tipofmytongue"
+pca_collection_name = "tipofmytongue_pca"
+
+milvus_uri = "grpc://localhost:19530"
+triton_uri = "grpc://localhost:8001"
+model_name = "gte-large"
+connection_timeout = 10
+
+# Establish connection to Milvus and Triton service
+try:
+    connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
+    model = TritonRemoteModel(url=triton_uri, model_name=model_name)
+except MilvusException as e:
+    print(f"Could not establish connection to Milvus: {e}")
+    sys.exit(0)
+except ConnectionRefusedError as e:
+    print(f"Could not establish connection to Triton: {e}")
+    sys.exit(0)
+
+embedding_collection = Collection(embedding_collection_name)
+embedding_collection.load()
+
+pca_collection = Collection(pca_collection_name)
+pca_collection.load()
+
 
 
 ###########################
 ### Script
 ###########################
 
-cache_path = "res/word_embeddings_cache.npz"
-dict_path = "res/words.txt"
-
-embeddings = load_embeddings(cache_path)
-dictionary = load_word_dicts(dict_path)
-print(f"Loaded {len(dictionary)} words from {dict_path}")
-
-# The length of the embeddings will always match the dictionary.
-# Some or all of the indexes may be populated
-embeddings_count = count_populated(embeddings)
-print(f"Loaded {embeddings_count} embeddings from {cache_path}")
-if embeddings_count == 0:
-    print("Cache empty! Exiting")
-    exit(-1)
-
-# Build lookup tables for finding an embedding for a given word, or looking up a word
-# using a similar embedding
-# NEEDED FOR EVERYTHING ELSE BELOW
-# word_embeddings, embedding_words = build_lookup_tables(dictionary, embeddings)
-
-# Simple wrapper for querying similar words
-def similar_words(q, k=10):
-   return find_similar_words(q, embeddings, dictionary, k)
-
-def similar_svn(q, k=10, knn_count=100, c=0.1):
-    # Use KNN to find the nearest knn_count words using a basic distance function
-    # This helps narrow the search for the SVN, since training an SVN is expensive
-    knn_results = similar_words(q, knn_count)
-    local_embeddings = [embeddings[x[1]] for x in knn_results]
-
-
-    from sklearn import svm
-    # Append the query into the set of data to evaluate
-    x = np.concatenate([q[None,...], local_embeddings])
-    y = np.zeros(len(x))
-    y[0] = 1 # We have 1 positive sample
-
-    # Train the SVN
-    clf = svm.LinearSVC(class_weight='balanced', verbose=False, dual=True, max_iter=10000, tol=1e-6, C=c)
-    clf.fit(x, y)
-    
-    # Only run inference on the knn result embeddings (skip the query included in X)
-    similarities = clf.decision_function(local_embeddings)
-    sorted_ix = np.argsort(-similarities)
-
-    # Build response format. Mirror the KNN result structure, but include similarity score instead of distance   
-    matches = []
-    for k in sorted_ix[:k]:
-        knn_result_mapping = knn_results[k]
-        matches.append((knn_result_mapping[0], knn_result_mapping[1], similarities[k]))
-    
-    return matches
-
-model = TritonRemoteModel("http://localhost:8100", "all-MiniLM-L6-v2")
 q = create_embedding("king", model) - create_embedding("man", model) + create_embedding("woman", model)
-print(similar_svn(q))
-# Drop into Python Shell
-# python -i foo.py
-code.interact(local=locals())
+print(k_similar_words(q, embedding_collection, pca_collection))
 
-# Sample Interpreter 
-# find_similar_words(q, embeddings, dictionary, k=10)
 
 
 ###########################

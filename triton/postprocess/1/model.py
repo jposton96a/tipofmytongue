@@ -11,7 +11,6 @@ def average_pool(last_hidden_states: torch.Tensor, attention_mask: torch.Tensor)
 
 class TritonPythonModel:
     def initialize(self, args):
-        # model_config = json.loads(args['model_config'])
         pass
 
     def execute(self, requests):

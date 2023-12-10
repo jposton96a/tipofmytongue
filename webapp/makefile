@@ -2,7 +2,7 @@ REGISTRY_HOSTNAME=478499271150.dkr.ecr.us-east-1.amazonaws.com
 REGISTRY=tipofmytongue_ui
 TAG=$(shell git rev-parse --short HEAD)
 IMAGE=${REGISTRY_HOSTNAME}/${REGISTRY}:${TAG}
-API_SERVER="172.17.0.3:8000"
+API_SERVER="172.17.0.3:8100"
 
 build:
 	echo Building into image: ${IMAGE}

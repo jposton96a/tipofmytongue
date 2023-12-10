@@ -15,7 +15,8 @@ class TritonPythonModel:
     def execute(self, requests):
         responses = []
         for request in requests:
-            text = pb_utils.get_input_tensor_by_name(request, "INPUT_TEXT").as_numpy()[0].decode()
+            text = [word.decode() for word in pb_utils.get_input_tensor_by_name(request, "INPUT_TEXT").as_numpy().tolist()]
+            
             encoded_input = self.tokenizer(text, padding=True, truncation=True, return_tensors='pt')
 
             inference_response = pb_utils.InferenceResponse(output_tensors=[

@@ -8,7 +8,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy app source to the container
-COPY tsconfig.json .
+COPY tsconfig.json ./
 COPY public ./public
 COPY src ./src
 
@@ -23,11 +23,11 @@ WORKDIR /usr/share/nginx/html
 # Remove default nginx static assets
 RUN rm -rf ./*
 # Copy static assets from builder stage
-COPY --from=builder /app/build/ . 
+COPY --from=builder /app/build/ ./
 
 # COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY nginx/default.conf.template /etc/nginx/conf.d/default.conf.template
-ENV API_SERVER "localhost:8000"
+ENV API_SERVER "localhost:8100"
 
 # Containers run nginx with global directives and daemon off
 # ENTRYPOINT ["nginx", "-g", "daemon off;"]
