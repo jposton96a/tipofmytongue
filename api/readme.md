@@ -36,7 +36,7 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
 4. Start Milvus and Triton services (triton-server will need time to build):
     ```bash
     cd ..
-    docker compose up -d etcd minio standalone triton-server
+    docker compose up -d etcd minio standalone triton
     ```
     If you have issues, remove the `-d` flag to troubleshoot.
 

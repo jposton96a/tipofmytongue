@@ -24,7 +24,7 @@ embedding_collection_name = "tipofmytongue"
 pca_collection_name = "tipofmytongue_pca"
 
 milvus_uri = "grpc://standalone:19530"
-triton_uri = "grpc://triton-server:8001"
+triton_uri = "grpc://triton:8001"
 model_name = "gte-large"
 connection_timeout = 60
 

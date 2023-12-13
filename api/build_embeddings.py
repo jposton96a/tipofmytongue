@@ -11,16 +11,18 @@ from app.milvus_utils import create_milvus_collection, insert_embeddings_in_milv
 
 
 
-if __name__ == "__main__":
-    embedding_dims = 1024
-    batch_size = 64
-    collection_name = "tipofmytongue"
-    path_to_words = "res/words.txt"
-
+def main(
+    path_to_words,
+    embedding_dims,
+    batch_size,
+    collection_name,
+    milvus_uri,
+    triton_uri
+):
     # Establish connection to Milvus and Triton
     try:
-        connections.connect(alias="default", host="localhost", port="19530") # Milvus
-        model = TritonRemoteModel("http://localhost:8000", "gte-large")      # Triton
+        connections.connect(alias="default", uri=milvus_uri)
+        model = TritonRemoteModel(url=triton_uri, model_name="gte-large")
     except MilvusException as e:
         print(f"Could not establish connection to Milvus: {e}")
         sys.exit(0)
@@ -68,3 +70,15 @@ if __name__ == "__main__":
                 print("Invalid user input, select a number from the options above.")
 
     connections.disconnect("default")
+
+
+
+if __name__ == "__main__":
+    main(
+        embedding_dims=1024,
+        batch_size=64,
+        collection_name="tipofmytongue",
+        path_to_words="res/words.txt",
+        milvus_uri="grpc://localhost:19530",
+        triton_uri="grpc://localhost:8001"
+    )
