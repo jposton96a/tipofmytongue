@@ -15,6 +15,7 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     ```bash
     wget https://raw.githubusercontent.com/dwyl/english-words/master/words.txt -O res/words.txt
     ```
+
 2. Setup Python dependencies:
     ```bash
     python -m venv .venv
@@ -24,23 +25,24 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
 
     pip install optimum[onnxruntime]
     ```
+
 3. Prepare Triton by downloading the model and converting it to ONNX format:
     ```bash
     cd app/
     python triton_utils.py
     mv model/model_quantized.onnx ../../triton/transformer/1/model.onnx
     rm -rf model/
+    cd ../..
     ```
     Triton should already be prepared after this step, if you have trouble look in the `triton/` directory. For more information about Triton see [Triton readme](../triton/readme.md).
 
-4. Start Milvus and Triton services (triton-server will need time to build):
+4. Start Milvus and Triton services (Triton depends on Milvus, so Milvus will start when Triton is launched):
     ```bash
-    cd ..
-    docker compose up -d etcd minio standalone triton
+    docker compose up -d triton
     ```
     If you have issues, remove the `-d` flag to troubleshoot.
 
-5. Build the embedding cache into Milvus  (this step will take the longest ~20-80 minutes depending on hardware):
+5. Build the embedding cache into Milvus (this step will take the longest ~5-80 minutes depending on hardware and model dimensions):
     ```bash
     python build_embeddings.py
     ```
@@ -59,9 +61,10 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
 
 8. Visualize similarity word embeddings. Open the file and set your own `input_word`:
     ```bash
-    # as a side effect, this renders all processed embeddings into `plot.png` 
+    # as a side effect, this renders all processed embeddings into `plot.png`
     python visualize_embeddings.py
     ```
+
 ## Deployment
 
 1. Run the API server ()
@@ -69,13 +72,18 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     cd ..
 
     # If Milvus and Triton are still running
-    docker compose up -d app ui_server
+    docker compose up -d app webapp
 
     # If Milvus and Triton are not running, run all services:
     docker compose up -d
     ```
 
 2. Access the frontend at http://localhost:8080
+
+3. Shutdown the server with:
+    ```bash
+    docker compose down
+    ```
 
 ### Resources
 

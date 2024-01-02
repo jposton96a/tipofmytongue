@@ -12,17 +12,20 @@ from app.milvus_utils import create_milvus_collection, insert_embeddings_in_milv
 
 
 def main(
+    model_name,
     path_to_words,
     embedding_dims,
     batch_size,
-    collection_name,
     milvus_uri,
     triton_uri
 ):
+    # Milvus doesn't allow hyphens, so replace with underscores
+    collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
+
     # Establish connection to Milvus and Triton
     try:
         connections.connect(alias="default", uri=milvus_uri)
-        model = TritonRemoteModel(url=triton_uri, model_name="gte-large")
+        model = TritonRemoteModel(uri=triton_uri, model_name=model_name)
     except MilvusException as e:
         print(f"Could not establish connection to Milvus: {e}")
         sys.exit(0)
@@ -75,9 +78,9 @@ def main(
 
 if __name__ == "__main__":
     main(
-        embedding_dims=1024,
+        model_name="all-MiniLM-L6-v2",
+        embedding_dims=384,
         batch_size=64,
-        collection_name="tipofmytongue",
         path_to_words="res/words.txt",
         milvus_uri="grpc://localhost:19530",
         triton_uri="grpc://localhost:8001"

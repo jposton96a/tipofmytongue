@@ -19,19 +19,21 @@ from app.triton_utils import TritonRemoteModel
 ### App Dependencies
 ###########################
 
-transform_model_path = "res/pca_transform.pkl"
-embedding_collection_name = "tipofmytongue"
-pca_collection_name = "tipofmytongue_pca"
+model_name = "all-MiniLM-L6-v2"
+# model_name = "gte-large"
 
 milvus_uri = "grpc://standalone:19530"
 triton_uri = "grpc://triton:8001"
-model_name = "gte-large"
 connection_timeout = 60
+
+transform_model_path = "res/pca_transform.pkl"
+embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
+pca_collection_name = embedding_collection_name + "_pca"
 
 # Establish connection to Milvus and Triton service
 try:
     connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
-    model = TritonRemoteModel(url=triton_uri, model_name=model_name)
+    model = TritonRemoteModel(uri=triton_uri, model_name=model_name)
 except MilvusException as e:
     print(f"Could not establish connection to Milvus: {e}")
     sys.exit(0)

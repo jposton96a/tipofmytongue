@@ -11,8 +11,8 @@ from urllib.parse import urlparse
 
 
 class TritonRemoteModel:
-    def __init__(self, url: str, model_name: str):
-        parsed_url = urlparse(url)
+    def __init__(self, uri: str, model_name: str):
+        parsed_url = urlparse(uri)
         if parsed_url.scheme == "http":
             from tritonclient.http import InferenceServerClient, InferInput
 
@@ -121,18 +121,65 @@ def create_warmup_file(save_path, np_array=None, string=False, img_path=None):
 
 
 if __name__ == "__main__":
+    ##################################################
+    # # Model: thenlper/gte-large
+    ##################################################
     # quantize_model("thenlper/gte-large", "./model")
+
+    # # tokenizer
     # create_warmup_file(
-    #     "../../triton/postprocess/warmup/last_hidden_state",
-    #     np.random.normal(0, 0.1, size=(1, 3, 1024))
+    #     "../../triton/tokenizer/warmup/input_text",
+    #     string="king"
+    # )
+
+    # # transformer
+    # create_warmup_file(
+    #     "../../triton/transformer/warmup/input_ids",
+    #     np.array([[101, 2332, 102]])
+    # )
+    # create_warmup_file(
+    #     "../../triton/transformer/warmup/attention_mask",
+    #     np_array=np.array([[1, 1, 1]])
+    # )
+
+    # # postprocess
+    # create_warmup_file(
+    #     "../../triton/postprocess/warmup/token_embeddings",
+    #     np_array=np.random.normal(0, 0.1, size=(1, 3, 1024))
     # )
     # create_warmup_file(
     #     "../../triton/postprocess/warmup/attention_mask",
-    #     np.array([[1, 1, 1]])
+    #     np_array=np.array([[1, 1, 1]])
     # )
 
+
+    ##################################################
+    # # Model: sentence-transformers/all-MiniLM-L6-v2
+    ##################################################
     # quantize_model("sentence-transformers/all-MiniLM-L6-v2", "./model")
+
+    # tokenizer
+    create_warmup_file(
+        "../../triton2/tokenizer/warmup/input_text",
+        string="king"
+    )
+
+    # transformer
+    create_warmup_file(
+        "../../triton2/transformer/warmup/input_ids",
+        np.array([[101, 2332, 102]])
+    )
+    create_warmup_file(
+        "../../triton2/transformer/warmup/attention_mask",
+        np_array=np.array([[1, 1, 1]])
+    )
+
+    # postprocess
     create_warmup_file(
         "../../triton2/postprocess/warmup/token_embeddings",
-        np.random.normal(0, 0.1, size=(1, 3, 384))
+        np_array=np.random.normal(0, 0.1, size=(1, 3, 384))
+    )
+    create_warmup_file(
+        "../../triton2/postprocess/warmup/attention_mask",
+        np_array=np.array([[1, 1, 1]])
     )

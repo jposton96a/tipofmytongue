@@ -11,14 +11,17 @@ from app.milvus_utils import create_milvus_collection, insert_pca_embeddings_in_
 
 
 def main(
-    path_to_words,
+    model_name,
     embedding_dims,
     batch_size,
-    pca_collection_name,
-    embedding_collection_name,
+    path_to_words,
     pca_model_path,
     milvus_uri
 ):
+    # Milvus doesn't allow hyphens, so replace with underscores
+    embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
+    pca_collection_name = embedding_collection_name + "_pca"
+
     # Establish connection to Milvus
     try:
         connections.connect(alias="default", uri=milvus_uri)
@@ -91,11 +94,10 @@ def main(
 
 if __name__ == "__main__":
     main(
-        path_to_words="res/words.txt",
+        model_name="all-MiniLM-L6-v2",
         embedding_dims=3,
         batch_size=5000,
-        pca_collection_name="tipofmytongue_pca",
-        embedding_collection_name="tipofmytongue",
+        path_to_words="res/words.txt",
         pca_model_path="res/pca_transform.pkl",
         milvus_uri="grpc://localhost:19530"
     )

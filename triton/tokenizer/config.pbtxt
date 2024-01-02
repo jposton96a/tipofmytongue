@@ -49,8 +49,8 @@ model_warmup [
 
 instance_group [
   {
-    count: 1
-    kind: KIND_CPU
+    count: 2
+    kind: KIND_GPU
   }
 ]
 

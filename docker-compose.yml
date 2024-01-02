@@ -72,7 +72,7 @@ services:
     build:
       context: ./triton
     volumes:
-      - "./triton:/models:rw"
+      - "./triton2:/models:rw"
     healthcheck:
       test: ["CMD", "curl", "-i", "-X", "GET", "http://localhost:8000/v2/health/ready"]
       interval: 30s
@@ -81,10 +81,16 @@ services:
     depends_on:
       - "standalone"
     ports:
-      - "8000:8000"
-      - "8001:8001"
+      - "8000-8001:8000-8001"
     networks:
       - backend
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   app:
     build:
@@ -103,7 +109,7 @@ services:
       - frontend
       - backend
 
-  ui_server:
+  webapp:
     build:
       context: ./webapp
     environment:

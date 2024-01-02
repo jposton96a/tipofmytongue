@@ -7,46 +7,50 @@ from app.query_utils import k_similar_words
 from app.triton_utils import TritonRemoteModel
 
 
-###########################
-### App Dependencies
-###########################
 
-transform_model_path = "res/pca_transform.pkl"
-embedding_collection_name = "tipofmytongue"
-pca_collection_name = "tipofmytongue_pca"
+def main(
+    model_name,
+    embedding_dims,
+    transform_model_path,
+    milvus_uri,
+    triton_uri,
+    connection_timeout
+):
+    # Milvus doesn't allow hyphens, so replace with underscores
+    embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
+    pca_collection_name = embedding_collection_name + "_pca"
 
-milvus_uri = "grpc://localhost:19530"
-triton_uri = "grpc://localhost:8001"
-model_name = "gte-large"
-connection_timeout = 10
+    # Establish connection to Milvus and Triton service
+    try:
+        connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
+        model = TritonRemoteModel(uri=triton_uri, model_name=model_name)
+    except MilvusException as e:
+        print(f"Could not establish connection to Milvus: {e}")
+        sys.exit(0)
+    except ConnectionRefusedError as e:
+        print(f"Could not establish connection to Triton: {e}")
+        sys.exit(0)
 
-# Establish connection to Milvus and Triton service
-try:
-    connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
-    model = TritonRemoteModel(url=triton_uri, model_name=model_name)
-except MilvusException as e:
-    print(f"Could not establish connection to Milvus: {e}")
-    sys.exit(0)
-except ConnectionRefusedError as e:
-    print(f"Could not establish connection to Triton: {e}")
-    sys.exit(0)
+    embedding_collection = Collection(embedding_collection_name)
+    embedding_collection.load()
 
-embedding_collection = Collection(embedding_collection_name)
-embedding_collection.load()
+    pca_collection = Collection(pca_collection_name)
+    pca_collection.load()
 
-pca_collection = Collection(pca_collection_name)
-pca_collection.load()
-
-
-
-###########################
-### Script
-###########################
-
-q = create_embedding("king", model) - create_embedding("man", model) + create_embedding("woman", model)
-print(k_similar_words(q, embedding_collection, pca_collection))
+    q = create_embedding("king", model) - create_embedding("man", model) + create_embedding("woman", model)
+    print(k_similar_words(q, embedding_collection, pca_collection))
 
 
+
+if __name__ == "__main__":
+    main(
+        model_name="all-MiniLM-L6-v2",
+        embedding_dims=384,
+        transform_model_path="res/pca_transform.pkl",
+        milvus_uri="grpc://localhost:19530",
+        triton_uri="grpc://localhost:8001",
+        connection_timeout=10
+    )
 
 ###########################
 ### Scratch
