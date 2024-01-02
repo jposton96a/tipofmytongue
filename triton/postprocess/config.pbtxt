@@ -4,9 +4,9 @@ max_batch_size: 0
 
 input [
   {
-    name: "last_hidden_state"
+    name: "token_embeddings"
     data_type: TYPE_FP32
-    dims: [ -1, -1, 1024 ]
+    dims: [ -1, -1, -1 ]
   },
   {
     name: "attention_mask"
@@ -19,7 +19,7 @@ output [
   {
     name: "embedding"
     data_type: TYPE_FP32
-    dims: [ -1, 1024 ]
+    dims: [ -1, -1 ]
   }
 ]
 
@@ -36,13 +36,13 @@ model_warmup [
     batch_size: 1
     count: 1
     inputs {
-      key: "last_hidden_state"
+      key: "token_embeddings"
       value: {
         data_type: TYPE_FP32
         dims: 1
         dims: 3
         dims: 1024
-        input_data_file: "last_hidden_state"
+        input_data_file: "token_embeddings"
       }
     }
     inputs {

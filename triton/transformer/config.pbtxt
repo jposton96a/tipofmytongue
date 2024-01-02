@@ -12,17 +12,12 @@ input [
     name: "attention_mask"
     data_type: TYPE_INT64
     dims: [ -1, -1 ]
-  },
-  {
-    name: "token_type_ids"
-    data_type: TYPE_INT64
-    dims: [ -1, -1 ]
   }
 ]
 
 output [
   {
-    name: "last_hidden_state"
+    name: "token_embeddings"
     data_type: TYPE_FP32
     dims: [ -1, -1, 1024 ]
   }
@@ -40,15 +35,6 @@ model_warmup [
         dims: 1
         dims: 3
         input_data_file: "input_ids"
-      }
-    }
-    inputs {
-      key: "token_type_ids"
-      value: {
-        data_type: TYPE_INT64
-        dims: 1
-        dims: 3
-        input_data_file: "token_type_ids"
       }
     }
     inputs {

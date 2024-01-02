@@ -121,6 +121,7 @@ def create_warmup_file(save_path, np_array=None, string=False, img_path=None):
 
 
 if __name__ == "__main__":
+    # quantize_model("thenlper/gte-large", "./model")
     # create_warmup_file(
     #     "../../triton/postprocess/warmup/last_hidden_state",
     #     np.random.normal(0, 0.1, size=(1, 3, 1024))
@@ -129,4 +130,9 @@ if __name__ == "__main__":
     #     "../../triton/postprocess/warmup/attention_mask",
     #     np.array([[1, 1, 1]])
     # )
-    quantize_model("thenlper/gte-large", "./model")
+
+    # quantize_model("sentence-transformers/all-MiniLM-L6-v2", "./model")
+    create_warmup_file(
+        "../../triton2/postprocess/warmup/token_embeddings",
+        np.random.normal(0, 0.1, size=(1, 3, 384))
+    )

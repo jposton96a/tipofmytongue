@@ -6,3 +6,6 @@ __pycache__/
 
 # Milvus volumes
 volumes/
+
+# Triton
+triton2/

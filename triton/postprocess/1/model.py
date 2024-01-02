@@ -16,7 +16,7 @@ class TritonPythonModel:
     def execute(self, requests):
         responses = []
         for request in requests:
-            last_hidden_state = pb_utils.get_input_tensor_by_name(request, "last_hidden_state").as_numpy()
+            last_hidden_state = pb_utils.get_input_tensor_by_name(request, "token_embeddings").as_numpy()
             attention_mask = pb_utils.get_input_tensor_by_name(request, "attention_mask").as_numpy()
 
             responses.append(
