@@ -1,7 +1,7 @@
 FROM python:3.10.13-slim-bullseye
 WORKDIR /src
 
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml ./
 
 RUN apt update -y && \
     apt install -y curl && \

@@ -1,4 +1,5 @@
 import sys
+from dotenv import load_dotenv
 from pymilvus import (
     connections,
     utility,
@@ -6,6 +7,7 @@ from pymilvus import (
     MilvusException
 )
 
+from app.env_utils import EnvArgumentParser
 from app.triton_utils import TritonRemoteModel
 from app.milvus_utils import create_milvus_collection, insert_embeddings_in_milvus
 
@@ -13,18 +15,19 @@ from app.milvus_utils import create_milvus_collection, insert_embeddings_in_milv
 
 def main(
     model_name,
-    path_to_words,
     embedding_dims,
     batch_size,
+    path_to_vocab,
     milvus_uri,
-    triton_uri
+    triton_uri,
+    connection_timeout=10
 ):
     # Milvus doesn't allow hyphens, so replace with underscores
     collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
 
     # Establish connection to Milvus and Triton
     try:
-        connections.connect(alias="default", uri=milvus_uri)
+        connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
         model = TritonRemoteModel(uri=triton_uri, model_name=model_name)
     except MilvusException as e:
         print(f"Could not establish connection to Milvus: {e}")
@@ -35,7 +38,7 @@ def main(
 
     if not utility.has_collection(collection_name):
         collection = create_milvus_collection(collection_name, embedding_dims)
-        insert_embeddings_in_milvus(path_to_words, batch_size, model, collection)
+        insert_embeddings_in_milvus(path_to_vocab, batch_size, model, collection)
 
     else:
         collection = Collection(collection_name)
@@ -56,10 +59,10 @@ def main(
             case "1": # If overwrite, remove old collection and start over
                 utility.drop_collection(collection_name)
                 collection = create_milvus_collection(collection_name, embedding_dims)
-                insert_embeddings_in_milvus(path_to_words, batch_size, model, collection)
+                insert_embeddings_in_milvus(path_to_vocab, batch_size, model, collection)
 
             case "2": # If pick up from num_entities index
-                insert_embeddings_in_milvus(path_to_words, batch_size, model, collection, num_entities)
+                insert_embeddings_in_milvus(path_to_vocab, batch_size, model, collection, num_entities)
 
             case "3": # Remove existing Milvus collection
                 utility.drop_collection(collection_name)
@@ -77,11 +80,21 @@ def main(
 
 
 if __name__ == "__main__":
+    load_dotenv()
+    parser = EnvArgumentParser()
+    parser.add_arg("MODEL_NAME", default="all-MiniLM-L6-v2", type=str)
+    parser.add_arg("EMBEDDING_DIMS", default=384, type=int)
+    parser.add_arg("EMBEDDING_BATCH_SIZE", default=64, type=int)
+    parser.add_arg("PATH_TO_VOCAB", default="res/words.txt", type=str)
+    parser.add_arg("MILVUS_URI", default="grpc://localhost:19530", type=str)
+    parser.add_arg("TRITON_URI", default="grpc://localhost:8001", type=str)
+    args = parser.parse_args()
+
     main(
-        model_name="all-MiniLM-L6-v2",
-        embedding_dims=384,
-        batch_size=64,
-        path_to_words="res/words.txt",
-        milvus_uri="grpc://localhost:19530",
-        triton_uri="grpc://localhost:8001"
+        args.MODEL_NAME,
+        args.EMBEDDING_DIMS,
+        args.EMBEDDING_BATCH_SIZE,
+        args.PATH_TO_VOCAB,
+        args.MILVUS_URI,
+        args.TRITON_URI
     )

@@ -2,6 +2,7 @@ import sys
 import joblib
 from typing import List
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, status
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
@@ -9,6 +10,7 @@ from enum import Enum
 from mangum import Mangum
 from pymilvus import connections, Collection, MilvusException
 
+from app.env_utils import EnvArgumentParser
 from app.embedding_utils import create_embedding
 from app.query_utils import k_similar_words, query_pca_word_embedding
 from app.triton_utils import TritonRemoteModel
@@ -18,15 +20,21 @@ from app.triton_utils import TritonRemoteModel
 ###########################
 ### App Dependencies
 ###########################
+load_dotenv()
+parser = EnvArgumentParser()
+parser.add_arg("MODEL_NAME", default="all-MiniLM-L6-v2", type=str)
+parser.add_arg("MILVUS_URI", default="grpc://localhost:19530", type=str)
+parser.add_arg("TRITON_URI", default="grpc://localhost:8001", type=str)
+parser.add_arg("PCA_MODEL_PATH", default="res/pca_transform.pkl", type=str)
+parser.add_arg("CONNECTION_TIMEOUT", default=60, type=int)
+args = parser.parse_args()
 
-model_name = "all-MiniLM-L6-v2"
-# model_name = "gte-large"
+model_name = args.MODEL_NAME
+milvus_uri = args.MILVUS_URI
+triton_uri = args.TRITON_URI
+pca_model_path = args.PCA_MODEL_PATH
+connection_timeout = args.CONNECTION_TIMEOUT
 
-milvus_uri = "grpc://standalone:19530"
-triton_uri = "grpc://triton:8001"
-connection_timeout = 60
-
-transform_model_path = "res/pca_transform.pkl"
 embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
 pca_collection_name = embedding_collection_name + "_pca"
 
@@ -48,21 +56,20 @@ pca_collection = Collection(pca_collection_name)
 pca_collection.load()
 
 try:
-    transform_model = joblib.load(transform_model_path)
+    transform_model = joblib.load(pca_model_path)
 except (FileNotFoundError, IndexError) as e:
     print(f"Error loading PCA model: {e}")
     print("Make sure you have defined a model and the file path is correct.")
     print("Run build_pca_embeddings.py to create and fit a PCA model.")
     sys.exit(0)
 
-# Define dictionary for global variables
-global_data = dict()
-
 
 
 ###########################
 ### REST API
 ###########################
+# Define dictionary for global variables
+global_data = dict()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -75,13 +82,12 @@ async def lifespan(app: FastAPI):
     # Shutdown
     global_data.clear()
 
-
 app = FastAPI(lifespan=lifespan)
 
 class HealthCheck(BaseModel):
     status: str = "OK"
 
-class Function(str,Enum):
+class Function(str, Enum):
     start = 'start'
     more_like = "more_like"
     less_like = "less_like"
@@ -148,3 +154,23 @@ async def scatter(ops: List[Operation]):
     return response
 
 handler = Mangum(app, lifespan="on")
+
+
+
+# if __name__ == "__main__":
+#     load_dotenv()
+#     parser = EnvArgumentParser()
+#     parser.add_arg("MODEL_NAME", default="all-MiniLM-L6-v2", type=str)
+#     parser.add_arg("MILVUS_URI", default="grpc://localhost:19530", type=str)
+#     parser.add_arg("TRITON_URI", default="grpc://localhost:8001", type=str)
+#     parser.add_arg("PCA_MODEL_PATH", default="res/pca_transform.pkl", type=str)
+#     parser.add_arg("CONNECTION_TIMEOUT", default=60, type=int)
+#     args = parser.parse_args()
+
+#     main(
+#         args.MODEL_NAME,
+#         args.MILVUS_URI,
+#         args.TRITON_URI,
+#         args.PCA_MODEL_PATH,
+#         args.CONNECTION_TIMEOUT
+#     )

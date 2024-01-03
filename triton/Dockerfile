@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tritonserver:23.10-py3
+FROM nvcr.io/nvidia/tritonserver:23.12-py3
 WORKDIR /src
 
 RUN pip3 install transformers[torch]

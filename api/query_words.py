@@ -1,7 +1,9 @@
 import sys
-import code
+
+from dotenv import load_dotenv
 from pymilvus import connections, Collection, MilvusException
 
+from app.env_utils import EnvArgumentParser
 from app.embedding_utils import create_embedding
 from app.query_utils import k_similar_words
 from app.triton_utils import TritonRemoteModel
@@ -10,11 +12,9 @@ from app.triton_utils import TritonRemoteModel
 
 def main(
     model_name,
-    embedding_dims,
-    transform_model_path,
     milvus_uri,
     triton_uri,
-    connection_timeout
+    connection_timeout=10
 ):
     # Milvus doesn't allow hyphens, so replace with underscores
     embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
@@ -43,49 +43,15 @@ def main(
 
 
 if __name__ == "__main__":
+    load_dotenv()
+    parser = EnvArgumentParser()
+    parser.add_arg("MODEL_NAME", default="all-MiniLM-L6-v2", type=str)
+    parser.add_arg("MILVUS_URI", default="grpc://localhost:19530", type=str)
+    parser.add_arg("TRITON_URI", default="grpc://localhost:8001", type=str)
+    args = parser.parse_args()
+
     main(
-        model_name="all-MiniLM-L6-v2",
-        embedding_dims=384,
-        transform_model_path="res/pca_transform.pkl",
-        milvus_uri="grpc://localhost:19530",
-        triton_uri="grpc://localhost:8001",
-        connection_timeout=10
+        args.MODEL_NAME,
+        args.MILVUS_URI,
+        args.TRITON_URI
     )
-
-###########################
-### Scratch
-###########################
-
-### BELOW - Comparison of different query styles 
-# (2 variations of knn + their normalized variants)
-
-# Query Examples
-# query_word = "zillion"
-# query = lookup_word_embedding(word_embeddings, query_word)
-
-
-# print("Matches1")
-# matches = search_similar_embeddings(embeddings, embedding_words, query, count=8)
-# print(matches)
-
-# print("Matches2")
-# matches2 = find_similar_words(query, embeddings, dictionary, k=10) ## GPT gave me this one lol
-# print(matches2)
-
-
-# ### Normalize - NOTE::: THIS KILLS THE RAM
-
-# print("Normalizing Embedding cache...")
-# del(word_embeddings)
-# del(embedding_words)
-# norm_embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True)) # L2 normalize
-# norm_word_embeddings, norm_embedding_words = build_lookup_tables(dictionary, norm_embeddings)
-# query = convert_to_query_embedding(norm_word_embeddings, query_word)
-
-# print("Matches - Normalized")
-# matches3 = search_similar_embeddings(norm_embeddings, norm_embedding_words, query, count=8)
-# print(matches3)
-
-# print("Matches 2 - Normalized")
-# matches4 = find_similar_words(query, embeddings, dictionary, k=10) ## GPT gave me this one lol
-# print(matches4)

@@ -128,27 +128,27 @@ if __name__ == "__main__":
 
     # # tokenizer
     # create_warmup_file(
-    #     "../../triton/tokenizer/warmup/input_text",
+    #     "../../triton/gte-large/tokenizer/warmup/input_text",
     #     string="king"
     # )
 
     # # transformer
     # create_warmup_file(
-    #     "../../triton/transformer/warmup/input_ids",
+    #     "../../triton/gte-large/transformer/warmup/input_ids",
     #     np.array([[101, 2332, 102]])
     # )
     # create_warmup_file(
-    #     "../../triton/transformer/warmup/attention_mask",
+    #     "../../triton/gte-large/transformer/warmup/attention_mask",
     #     np_array=np.array([[1, 1, 1]])
     # )
 
     # # postprocess
     # create_warmup_file(
-    #     "../../triton/postprocess/warmup/token_embeddings",
+    #     "../../triton/gte-large/postprocess/warmup/token_embeddings",
     #     np_array=np.random.normal(0, 0.1, size=(1, 3, 1024))
     # )
     # create_warmup_file(
-    #     "../../triton/postprocess/warmup/attention_mask",
+    #     "../../triton/gte-large/postprocess/warmup/attention_mask",
     #     np_array=np.array([[1, 1, 1]])
     # )
 
@@ -160,26 +160,26 @@ if __name__ == "__main__":
 
     # tokenizer
     create_warmup_file(
-        "../../triton2/tokenizer/warmup/input_text",
+        "../../triton/all-MiniLM-L6-v2/tokenizer/warmup/input_text",
         string="king"
     )
 
     # transformer
     create_warmup_file(
-        "../../triton2/transformer/warmup/input_ids",
+        "../../triton/all-MiniLM-L6-v2/transformer/warmup/input_ids",
         np.array([[101, 2332, 102]])
     )
     create_warmup_file(
-        "../../triton2/transformer/warmup/attention_mask",
+        "../../triton/all-MiniLM-L6-v2/transformer/warmup/attention_mask",
         np_array=np.array([[1, 1, 1]])
     )
 
     # postprocess
     create_warmup_file(
-        "../../triton2/postprocess/warmup/token_embeddings",
+        "../../triton/all-MiniLM-L6-v2/postprocess/warmup/token_embeddings",
         np_array=np.random.normal(0, 0.1, size=(1, 3, 384))
     )
     create_warmup_file(
-        "../../triton2/postprocess/warmup/attention_mask",
+        "../../triton/all-MiniLM-L6-v2/postprocess/warmup/attention_mask",
         np_array=np.array([[1, 1, 1]])
     )

@@ -3,6 +3,7 @@
 *.onnx
 __pycache__/
 **/__pycache__/
+*.lock
 
 # Milvus volumes
 volumes/
