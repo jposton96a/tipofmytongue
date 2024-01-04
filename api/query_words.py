@@ -1,9 +1,7 @@
 import sys
 
-from dotenv import load_dotenv
 from pymilvus import connections, Collection, MilvusException
 
-from app.env_utils import EnvArgumentParser
 from app.embedding_utils import create_embedding
 from app.query_utils import k_similar_words
 from app.triton_utils import TritonRemoteModel
@@ -43,15 +41,8 @@ def main(
 
 
 if __name__ == "__main__":
-    load_dotenv()
-    parser = EnvArgumentParser()
-    parser.add_arg("MODEL_NAME", default="all-MiniLM-L6-v2", type=str)
-    parser.add_arg("MILVUS_URI", default="grpc://localhost:19530", type=str)
-    parser.add_arg("TRITON_URI", default="grpc://localhost:8001", type=str)
-    args = parser.parse_args()
-
     main(
-        args.MODEL_NAME,
-        args.MILVUS_URI,
-        args.TRITON_URI
+        model_name="all-MiniLM-L6-v2",
+        milvus_uri="grpc://standalone:19530",
+        triton_uri="grpc://triton:8001"
     )

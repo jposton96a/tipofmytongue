@@ -2,7 +2,6 @@ import sys
 import joblib
 from typing import List
 
-from dotenv import load_dotenv
 from fastapi import FastAPI, status
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
@@ -10,7 +9,6 @@ from enum import Enum
 from mangum import Mangum
 from pymilvus import connections, Collection, MilvusException
 
-from app.env_utils import EnvArgumentParser
 from app.embedding_utils import create_embedding
 from app.query_utils import k_similar_words, query_pca_word_embedding
 from app.triton_utils import TritonRemoteModel
@@ -20,20 +18,13 @@ from app.triton_utils import TritonRemoteModel
 ###########################
 ### App Dependencies
 ###########################
-load_dotenv()
-parser = EnvArgumentParser()
-parser.add_arg("MODEL_NAME", default="all-MiniLM-L6-v2", type=str)
-parser.add_arg("MILVUS_URI", default="grpc://localhost:19530", type=str)
-parser.add_arg("TRITON_URI", default="grpc://localhost:8001", type=str)
-parser.add_arg("PCA_MODEL_PATH", default="res/pca_transform.pkl", type=str)
-parser.add_arg("CONNECTION_TIMEOUT", default=60, type=int)
-args = parser.parse_args()
+# model_name = "gte-large"
+model_name = "all-MiniLM-L6-v2"
 
-model_name = args.MODEL_NAME
-milvus_uri = args.MILVUS_URI
-triton_uri = args.TRITON_URI
-pca_model_path = args.PCA_MODEL_PATH
-connection_timeout = args.CONNECTION_TIMEOUT
+milvus_uri = "grpc://standalone:19530"
+triton_uri = "grpc://triton:8001"
+pca_model_path = "res/pca_transform.pkl"
+connection_timeout = 60
 
 embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
 pca_collection_name = embedding_collection_name + "_pca"
@@ -154,23 +145,3 @@ async def scatter(ops: List[Operation]):
     return response
 
 handler = Mangum(app, lifespan="on")
-
-
-
-# if __name__ == "__main__":
-#     load_dotenv()
-#     parser = EnvArgumentParser()
-#     parser.add_arg("MODEL_NAME", default="all-MiniLM-L6-v2", type=str)
-#     parser.add_arg("MILVUS_URI", default="grpc://localhost:19530", type=str)
-#     parser.add_arg("TRITON_URI", default="grpc://localhost:8001", type=str)
-#     parser.add_arg("PCA_MODEL_PATH", default="res/pca_transform.pkl", type=str)
-#     parser.add_arg("CONNECTION_TIMEOUT", default=60, type=int)
-#     args = parser.parse_args()
-
-#     main(
-#         args.MODEL_NAME,
-#         args.MILVUS_URI,
-#         args.TRITON_URI,
-#         args.PCA_MODEL_PATH,
-#         args.CONNECTION_TIMEOUT
-#     )

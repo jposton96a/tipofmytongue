@@ -76,7 +76,7 @@ services:
     ports:
       - 8000-8001:8000-8001
     volumes:
-      - ./triton/${MODEL_NAME}:/models:rw
+      - ./triton/all-MiniLM-L6-v2:/models:rw
     depends_on:
       - standalone
     deploy:
@@ -100,8 +100,6 @@ services:
       - backend
     volumes:
       - ./api/res:/src/res:ro
-    env_file:
-      - .env
     depends_on:
       - triton
       - standalone

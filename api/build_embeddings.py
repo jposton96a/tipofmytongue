@@ -1,5 +1,4 @@
 import sys
-from dotenv import load_dotenv
 from pymilvus import (
     connections,
     utility,
@@ -7,7 +6,6 @@ from pymilvus import (
     MilvusException
 )
 
-from app.env_utils import EnvArgumentParser
 from app.triton_utils import TritonRemoteModel
 from app.milvus_utils import create_milvus_collection, insert_embeddings_in_milvus
 
@@ -80,21 +78,11 @@ def main(
 
 
 if __name__ == "__main__":
-    load_dotenv()
-    parser = EnvArgumentParser()
-    parser.add_arg("MODEL_NAME", default="all-MiniLM-L6-v2", type=str)
-    parser.add_arg("EMBEDDING_DIMS", default=384, type=int)
-    parser.add_arg("EMBEDDING_BATCH_SIZE", default=64, type=int)
-    parser.add_arg("PATH_TO_VOCAB", default="res/words.txt", type=str)
-    parser.add_arg("MILVUS_URI", default="grpc://localhost:19530", type=str)
-    parser.add_arg("TRITON_URI", default="grpc://localhost:8001", type=str)
-    args = parser.parse_args()
-
     main(
-        args.MODEL_NAME,
-        args.EMBEDDING_DIMS,
-        args.EMBEDDING_BATCH_SIZE,
-        args.PATH_TO_VOCAB,
-        args.MILVUS_URI,
-        args.TRITON_URI
+        model_name="all-MiniLM-L6-v2",
+        embedding_dims=384,
+        batch_size=64,
+        path_to_vocab="res/words.txt",
+        milvus_uri="grpc://standalone:19530",
+        triton_uri="grpc://triton:8001"
     )

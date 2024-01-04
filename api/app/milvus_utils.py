@@ -34,7 +34,7 @@ def create_milvus_collection(collection_name, embedding_dims):
 
 
 def insert_embeddings_in_milvus(
-    path_to_words,
+    path_to_vocab,
     batch_size,
     model,
     collection,
@@ -47,7 +47,7 @@ def insert_embeddings_in_milvus(
     Insert vector embeddings into a defined Milvus collection
 
     Args:
-        path_to_words (str): Path to dictionary text file.
+        path_to_vocab (str): Path to dictionary text file.
         batch_size (int): The size of the batch sent to Triton for inference.
         model (InferenceServerClient): Defined TritonRemoteModel each word is sent to.
         collection (pymilvus.Collection): Defined Milvus collection for each word, embedding to be sent to.
@@ -65,7 +65,7 @@ def insert_embeddings_in_milvus(
         None
     """
     # read all words into list
-    with open(path_to_words, "r") as file:
+    with open(path_to_vocab, "r") as file:
         words = file.read().splitlines()
 
     num_words = len(words)
@@ -114,7 +114,7 @@ def insert_embeddings_in_milvus(
 
 
 def insert_pca_embeddings_in_milvus(
-    path_to_words,
+    path_to_vocab,
     batch_size,
     pca_collection,
     embedding_collection,
@@ -127,7 +127,7 @@ def insert_pca_embeddings_in_milvus(
     Insert vector embeddings into a defined Milvus collection
 
     Args:
-        path_to_words (str): Path to dictionary text file.
+        path_to_vocab (str): Path to dictionary text file.
         batch_size (int): The size of the batch sent to Triton for inference.
         model (InferenceServerClient): Defined TritonRemoteModel each word is sent to.
         pca_collection (pymilvus.Collection): Defined Milvus collection for each reduced embedding to be sent to.
@@ -145,7 +145,7 @@ def insert_pca_embeddings_in_milvus(
         None
     """
     # read all words into list
-    with open(path_to_words, "r") as file:
+    with open(path_to_vocab, "r") as file:
         words = file.read().splitlines()
 
     num_words = len(words)
