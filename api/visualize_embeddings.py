@@ -1,64 +1,91 @@
-import os
+import sys
 import joblib
 import numpy as np
-from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from pymilvus import connections, Collection, MilvusException
 
-from app.embedding_utils import create_embedding, load_embeddings, load_word_dicts, count_populated
-from app.query_utils import find_similar_words
-from app.download_embeddings import download_embeddings
-from app.transform_utils import create_or_load_transform
-
-# cache_path = "res/chatgpt_embedding_subset_100.npz"
-cache_path = "res/word_embeddings_cache.npz"
-dict_path = "res/words.txt"
-
-transform_model_path = "res/pca_transform.pkl"
-transformed_embeddings_path = "res/pca_transformed_embeddings.npy"
-
-embeddings = load_embeddings(cache_path)
-dictionary = load_word_dicts(dict_path)
-print(f"Loaded {len(dictionary)} words from {dict_path}")
-
-# The length of the embeddings will always match the dictionary.
-# Some or all of the indexes may be populated
-embeddings_count = count_populated(embeddings)
-print(f"Loaded {embeddings_count} embeddings from {cache_path}")
-if embeddings_count == 0:
-    print("Cache empty! Exiting")
-    exit(-1)
-
-transform_model, reduced_embeddings = create_or_load_transform(
-    embeddings=embeddings, 
-    transform_model_path=transform_model_path, 
-    transformed_embeddings_path=transformed_embeddings_path
-)
-
-input_vector = create_embedding("king")
-transformed_search_vector = transform_model.transform(input_vector.reshape(1, -1))
-
-print (transformed_search_vector)
-
-# Create a 3D scatter plot
-fig = plt.figure(figsize=(12, 8))
-ax = fig.add_subplot(111, projection='3d')
-
-# Scatter plot
-x, y, z = reduced_embeddings[:, 0], reduced_embeddings[:, 1], reduced_embeddings[:, 2]
-ax.scatter(x, y, z)
-
-# Plot the search vector
-ax.scatter(transformed_search_vector[0][0], transformed_search_vector[0][1], transformed_search_vector[0][2], color='red', label='Search Vector')
+from app.embedding_utils import create_embedding
+from app.query_utils import k_similar_words
+from app.triton_utils import TritonRemoteModel
 
 
-# Label each point with its corresponding word
-for i, word in enumerate(dictionary[:embeddings_count]):
-    ax.text(x[i], y[i], z[i], word, size=10, zorder=1, color='k')
 
-ax.set_title('3D PCA of Word Embeddings')
-ax.set_xlabel('PCA1')
-ax.set_ylabel('PCA2')
-ax.set_zlabel('PCA3')
-# plt.show()
-plt.savefig('plot.png')
+def main(
+    input_word,
+    num_points,
+    model_name,
+    pca_model_path,
+    milvus_uri,
+    triton_uri,
+    connection_timeout=10
+):
+    # Milvus doesn't allow hyphens, so replace with underscores
+    embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
+    pca_collection_name = embedding_collection_name + "_pca"
+
+    # Establish connection to Milvus and Triton service
+    try:
+        connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
+        model = TritonRemoteModel(uri=triton_uri, model_name=model_name)
+    except MilvusException as e:
+        print(f"Could not establish connection to Milvus: {e}")
+        sys.exit(0)
+    except ConnectionRefusedError as e:
+        print(f"Could not establish connection to Triton: {e}")
+        sys.exit(0)
+
+    embedding_collection = Collection(embedding_collection_name)
+    embedding_collection.load()
+
+    pca_collection = Collection(pca_collection_name)
+    pca_collection.load()
+
+    try:
+        transform_model = joblib.load(pca_model_path)
+    except (FileNotFoundError, IndexError) as e:
+        print(f"Error loading PCA model: {e}")
+        print("Make sure you have defined a model and the file path is correct.")
+        print("Run build_pca_embeddings.py to create and fit a PCA model.")
+        sys.exit(0)
+
+
+    # Create input vector and 100 similar word embeddings to plot
+    input_vector = create_embedding(input_word, model)
+    similar_words = k_similar_words(input_vector, embedding_collection, pca_collection, k=num_points)
+    words = [word[0] for word in similar_words]
+    reduced_embeddings = np.array([word[1] for word in similar_words])
+    transformed_search_vector = transform_model.transform(input_vector.reshape(1, -1))[0]
+
+    # Create a 3D scatter plot
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Scatter plot
+    x, y, z = reduced_embeddings[:, 0], reduced_embeddings[:, 1], reduced_embeddings[:, 2]
+    ax.scatter(x, y, z)
+
+    # Plot the search vector
+    ax.scatter(transformed_search_vector[0], transformed_search_vector[1], transformed_search_vector[2], color='red', label='Search Vector')
+
+    # Label each point with its corresponding word
+    for i, word in enumerate(words):
+        ax.text(x[i], y[i], z[i], word, size=10, zorder=1, color='k')
+
+    ax.set_title(f"3D PCA similarity word embeddings for '{input_word.upper()}'")
+    ax.set_xlabel("PCA1")
+    ax.set_ylabel("PCA2")
+    ax.set_zlabel("PCA3")
+    plt.savefig("plot.png")
+    print("Results save to `plot.png`")
+
+
+
+if __name__ == "__main__":
+    main(
+        input_word="aliens",
+        num_points=50,
+        model_name="all-MiniLM-L6-v2",
+        pca_model_path="res/pca_transform.pkl",
+        milvus_uri="grpc://standalone:19530",
+        triton_uri="grpc://triton:8001"
+    )

@@ -7,7 +7,8 @@ app/__pycache__/
 # Dont check in the massive files :)
 # - Embedding cache ~5gb
 # - Vocab List - Pull it from online
-res/ 
+res/*.pkl
+res/*.txt
 
 # Ignore Credentials
 .env

@@ -1,23 +1,122 @@
 version: '3.8'
 
-services:
-  app:
-    build: 
-      context: ./api
-    environment:
-        OPENAI_API_KEY: "<INSERT OPENAI_API_KEY>"
-    volumes:
-      - ./api/res/words.txt:/src/res/words.txt:ro
-      - ./api/res/word_embeddings_cache.npz:/src/res/word_embeddings_cache.npz:ro
-      - ./api/res/pca_transform.pkl:/src/res/pca_transform.pkl:ro
-      - ./api/res/pca_transform_weights.npy:/src/res/pca_transform_weights.npy:ro
-    ports:
-      - 8000:8000
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
 
-  ui_server: 
+services:
+  etcd:
+    container_name: milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.5
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - backend
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    healthcheck:
+      test: [ "CMD", "etcdctl", "endpoint", "health" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio:
+    container_name: milvus-minio
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    command: minio server /minio_data --console-address ":9001"
+    networks:
+      - backend
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  standalone:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.3.3
+    command: [ "milvus", "run", "standalone" ]
+    networks:
+      - backend
+    ports:
+      - 19530:19530
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
+    security_opt:
+    - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    depends_on:
+      - etcd
+      - minio
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+
+  triton:
+    build:
+      context: ./triton
+    networks:
+      - backend
+    ports:
+      - 8000-8001:8000-8001
+    volumes:
+      - ./triton/all-MiniLM-L6-v2:/models:rw
+    depends_on:
+      - standalone
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: [ "CMD", "curl", "-i", "-X", "GET", "http://localhost:8000/v2/health/ready" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  app:
+    build:
+      context: ./api
+    networks:
+      - frontend
+      - backend
+    volumes:
+      - ./api/res:/src/res:ro
+    depends_on:
+      - triton
+      - standalone
+    healthcheck:
+      test: [ "CMD", "curl", "-i", "-X", "GET", "http://localhost:8100/health" ]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+
+  webapp:
     build:
       context: ./webapp
+    networks:
+      - frontend
     environment:
-      API_SERVER: "app:8000" # Frontend Nginx router proxies to the "app" container
+      API_SERVER: app:8100
     ports:
       - 8080:80
+    depends_on:
+      - app
