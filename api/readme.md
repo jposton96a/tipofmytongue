@@ -30,7 +30,7 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     ```bash
     cd app/
     python triton_utils.py
-    mv model/model_quantized.onnx ../../triton/transformer/1/model.onnx
+    mv model/model_quantized.onnx ../../triton/all-MiniLM-L6-v2/transformer/1/model.onnx
     rm -rf model/
     cd ../..
     ```

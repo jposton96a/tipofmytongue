@@ -156,7 +156,7 @@ if __name__ == "__main__":
     ##################################################
     # # Model: sentence-transformers/all-MiniLM-L6-v2
     ##################################################
-    # quantize_model("sentence-transformers/all-MiniLM-L6-v2", "./model")
+    quantize_model("sentence-transformers/all-MiniLM-L6-v2", "./model")
 
     # tokenizer
     create_warmup_file(
