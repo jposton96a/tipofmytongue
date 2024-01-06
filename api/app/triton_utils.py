@@ -120,7 +120,7 @@ def create_warmup_file(save_path, np_array=None, string=False, img_path=None):
         print("Invalid input. Input a numpy array, string, or image path")
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     ##################################################
     # # Model: thenlper/gte-large
     ##################################################
