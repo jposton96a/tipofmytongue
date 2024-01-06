@@ -1,7 +1,7 @@
 # Tip of My Tongue | Backend API Server
 
 ## Overview
-This directory contains the scripts & API implementation used to run the backend for [TipOfMyTongue](../readme). This server relies on Milvus Vector Store and Triton Inference Server deployed with docker compose.
+This directory contains the scripts & API implementation used to run the backend for [TipOfMyTongue](../readme.md). This server relies on Milvus Vector Store and Triton Inference Server deployed with docker compose.
 
 ### Dependencies
 The server relies on a list of words & a pre-computed PCA model file. Each of these must be created before starting the server:
@@ -22,19 +22,21 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     source .venv/bin/activate
     pip install poetry
     poetry install
-
-    pip install optimum[onnxruntime]
     ```
 
-3. Prepare Triton by downloading the model and converting it to ONNX format:
+3. Prepare Triton by creating an `.env` file with AWS credentials and the model repository location:
     ```bash
-    cd app/
-    python triton_utils.py
-    mv model/model_quantized.onnx ../../triton/all-MiniLM-L6-v2/transformer/1/model.onnx
-    rm -rf model/
-    cd ../..
+    cd ../triton
+    touch .env
     ```
-    Triton should already be prepared after this step, if you have trouble look in the `triton/` directory. For more information about Triton see [Triton readme](../triton/readme.md).
+
+    ```text title=".env"
+    AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
+    AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
+    AWS_DEFAULT_REGION=<AWS_DEFAULT_REGION>
+    MODEL_REPO="s3://tipofmytongue-models-gpu/all-MiniLM-L6-v2/"
+    ```
+    There are other options for models. For more information see the Triton [readme](../triton/readme.md).
 
 4. Start Milvus and Triton services (Triton depends on Milvus, so Milvus will start when Triton is launched):
     ```bash
@@ -44,24 +46,27 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
 
 5. Build the embedding cache into Milvus (this step will take the longest ~5-80 minutes depending on hardware and model dimensions):
     ```bash
+    # Options can be changed at the bottom of this file
     python build_embeddings.py
     ```
 
-6. Build the reduced dimensional PCA embeddings and save the fitted model (this step shouldn't take too long):
+6. Build the reduced dimensional PCA embeddings and save the fitted model (this step should take a couple minutes):
     ```bash
+    # Options can be changed at the bottom of this file
     python build_pca_embeddings.py
     ```
     By default, the pickle model will save to `res/pca_transform.pkl`.
 
 7. (Optional - debug tooling) Query an embedding against the cache db:
     ```bash
-    # References the embedding cache @ res/<embedding_cache_name>.npz
+    # Options can be changed at the bottom of this file
     python query_words.py
     ```
 
 8. Visualize similarity word embeddings. Open the file and set your own `input_word`:
     ```bash
-    # as a side effect, this renders all processed embeddings into `plot.png`
+    # Options can be changed at the bottom of this file
+    # As a side effect, this renders all processed embeddings into `plot.png`
     python visualize_embeddings.py
     ```
 

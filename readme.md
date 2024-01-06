@@ -30,9 +30,7 @@ Follow the directions in the [backend's readme](./api/readme.md) to build the fo
 | Component | Filepath | Description | Build Step |  |
 |---|---|---|---|---|
 | Vocabulary List | `res/words.txt` | a list of words to query against | Step #1 |  |
-| Embedding Cache | `res/word_embeddings_cache.npz` | a cache of embeddings for each of the words in vocabulary | Step #3 |  |
-| PCA Transform Model | `res/pca_transform.pkl` | the trained PCA model | Step #5 |  |
-| PCA Transform Cache | `res/pca_transform_weights.npy` | a cache of precomputed 3D transforms of the embeddings in the Embedding Cache | Step #5 |  |
+| PCA Transform Model | `res/pca_transform.pkl` | the trained PCA model | Step #6 |  |
 
 ### Boot it up!
 At this point, you should be able to launch the service using Docker.
