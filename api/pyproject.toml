@@ -1,23 +1,37 @@
 [tool.poetry]
-name = "python-template"
+name = "app"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.9.0"
-openai = {extras = ["datalib"], version = "^0.28.0"}
-numpy = "^1.25.2"
-fastapi = "^0.103.2"
-uvicorn = "^0.23.2"
-python-dotenv = "^1.0.0"
-mangum = "^0.17.0"
-boto3 = "^1.28.65"
+python = "^3.9.0"
+numpy = "^1.26.3"
+pymilvus = "^2.3.5"
 scikit-learn = "^1.3.2"
+torch = "^2.1.2"
+tritonclient = {extras = ["all"], version = "^2.41.0"}
+
+
+
+[tool.poetry.group.local]
+optional = true
+
+[tool.poetry.group.local.dependencies]
+tqdm = "^4.66.1"
 matplotlib = "^3.8.2"
-torch = "^2.1.1"
-tritonclient = {extras = ["all"], version = "^2.39.0"}
-pymilvus = "^2.3.4"
+
+
+
+[tool.poetry.group.docker]
+optional = true
+
+[tool.poetry.group.docker.dependencies]
+fastapi = "^0.108.0"
+uvicorn = "^0.25.0"
+mangum = "^0.17.0"
+
+
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md

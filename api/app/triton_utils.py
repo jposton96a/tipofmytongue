@@ -1,5 +1,5 @@
 """
-requirements:
+requirements for model quantization:
     pip install optimum[onnxruntime]
     pip install tritonclient[all]
 """

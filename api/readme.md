@@ -21,8 +21,9 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     python -m venv .venv
     source .venv/bin/activate
     pip install poetry
-    poetry install
+    poetry install --with local
     ```
+    Poetry will install the "local" group for packages running in the venv, and the "docker" group for packages in the Docker container.
 
 3. Prepare Triton by creating an `.env` file with AWS credentials and the model repository location:
     ```bash
@@ -99,3 +100,10 @@ https://github.com/karpathy/randomfun/blob/master/knn_vs_svm.ipynb
 https://mangum.io/
 https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
 https://ademoverflow.com/blog/tutorial-fastapi-aws-lambda-serverless/
+
+## Issues
+
+* There have been issues with installing packages with poetry. If your poetry installation is stuck at "resolving dependencies..." add the verbose flag "-vvv". Furthermore, if it is stuck at "Loading MacOS", add the following variable to your environment by running this:
+    ```bash
+    export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+    ```

@@ -4,10 +4,6 @@
 .env
 __pycache__/
 **/__pycache__/
-*.lock
 
 # Milvus volumes
 volumes/
-
-# Triton
-triton2/
