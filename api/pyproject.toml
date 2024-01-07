@@ -9,7 +9,6 @@ python = "^3.9.0"
 numpy = "^1.26.3"
 pymilvus = "^2.3.5"
 scikit-learn = "^1.3.2"
-torch = "^2.1.2"
 tritonclient = {extras = ["all"], version = "^2.41.0"}
 
 
@@ -20,6 +19,7 @@ optional = true
 [tool.poetry.group.local.dependencies]
 tqdm = "^4.66.1"
 matplotlib = "^3.8.2"
+torch = "^2.1.2"
 
 
 
