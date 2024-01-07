@@ -14,7 +14,10 @@ There are currently two models available at the following locations:
 
 Triton can be started using Docker and the compose plugin. The service is located in the `docker-compose.yml` file named `triton`. 
 
-
+To see each model repository, pull them down using the AWS cli:
+```bash
+aws s3 cp s3://tipofmytongue-models-gpu/ ./models/ --recursive
+```
 
 ## Using Triton on GPU
 Running Triton on a machine with a CUDA-enabled GPU will yeild the best results. If running on a GPU, make sure the following option exists:

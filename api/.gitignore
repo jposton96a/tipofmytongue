@@ -1,6 +1,7 @@
 # Python stuff
 __pycache__/
 app/__pycache__/
+poetry.lock
 
 ## Tip of My Tongue stuff
 
