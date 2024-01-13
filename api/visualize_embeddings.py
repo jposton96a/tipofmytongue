@@ -22,6 +22,8 @@ def main(
     # Milvus doesn't allow hyphens, so replace with underscores
     embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
     pca_collection_name = embedding_collection_name + "_pca"
+    # append model name to PCA model to allow for more than one
+    pca_model_path = os.path.join(pca_model_path, "pca_model_" + embedding_collection_name + ".pkl")
 
     # Establish connection to Milvus and Triton service
     try:
@@ -85,7 +87,7 @@ if __name__ == "__main__":
         input_word="aliens",
         num_points=50,
         model_name="all-MiniLM-L6-v2",
-        pca_model_path="res/pca_transform.pkl",
-        milvus_uri="grpc://standalone:19530",
-        triton_uri="grpc://triton:8001"
+        pca_model_path="res/",
+        milvus_uri="grpc://localhost:19530",
+        triton_uri="grpc://localhost:8001"
     )

@@ -43,6 +43,6 @@ def main(
 if __name__ == "__main__":
     main(
         model_name="all-MiniLM-L6-v2",
-        milvus_uri="grpc://standalone:19530",
-        triton_uri="grpc://triton:8001"
+        milvus_uri="grpc://localhost:19530",
+        triton_uri="grpc://localhost:8001"
     )

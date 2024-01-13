@@ -83,6 +83,6 @@ if __name__ == "__main__":
         embedding_dims=384,
         batch_size=64,
         path_to_vocab="res/words.txt",
-        milvus_uri="grpc://standalone:19530",
-        triton_uri="grpc://triton:8001"
+        milvus_uri="grpc://localhost:19530",
+        triton_uri="grpc://localhost:8001"
     )

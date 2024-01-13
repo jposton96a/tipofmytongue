@@ -1,3 +1,4 @@
+import os
 import sys
 from pymilvus import (
     connections,
@@ -22,6 +23,8 @@ def main(
     # Milvus doesn't allow hyphens, so replace with underscores
     embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
     pca_collection_name = embedding_collection_name + "_pca"
+    # append model name to PCA model to allow for more than one
+    pca_model_path = os.path.join(pca_model_path, "pca_model_" + embedding_collection_name + ".pkl")
 
     # Establish connection to Milvus
     try:
@@ -96,9 +99,9 @@ def main(
 if __name__ == "__main__":
     main(
         model_name="all-MiniLM-L6-v2",
-        embedding_dims=384,
+        embedding_dims=3,
         batch_size=5000,
         path_to_vocab="res/words.txt",
-        pca_model_path="res/pca_transform.pkl",
-        milvus_uri="grpc://standalone:19530"
+        pca_model_path="res/",
+        milvus_uri="grpc://localhost:19530"
     )
