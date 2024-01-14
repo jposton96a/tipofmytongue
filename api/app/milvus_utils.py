@@ -187,6 +187,7 @@ def insert_pca_embeddings_in_milvus(
     pca = PCA(n_components=3)
     transformed_embeddings = pca.fit_transform(embeddings)
     joblib.dump(pca, pca_model_path)
+    print(f"Fitted PCA model saved to: {pca_model_path}")
 
     del pca, batch, end_batch, text, response, embeddings
 

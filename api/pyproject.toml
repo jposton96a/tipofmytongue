@@ -10,6 +10,7 @@ numpy = "^1.26.3"
 pymilvus = "^2.3.5"
 scikit-learn = "^1.3.2"
 tritonclient = {extras = ["all"], version = "^2.41.0"}
+torch = {version = "^2.1.2", source = "pytorch-cpu"}
 
 
 
@@ -19,7 +20,6 @@ optional = true
 [tool.poetry.group.local.dependencies]
 tqdm = "^4.66.1"
 matplotlib = "^3.8.2"
-torch = "^2.1.2"
 
 
 
@@ -32,6 +32,11 @@ uvicorn = "^0.25.0"
 mangum = "^0.17.0"
 
 
+
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md
