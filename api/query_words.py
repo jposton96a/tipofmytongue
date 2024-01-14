@@ -42,7 +42,7 @@ def main(
 
 if __name__ == "__main__":
     main(
-        model_name="all-MiniLM-L6-v2",
+        model_name="gte-small",
         milvus_uri="grpc://localhost:19530",
         triton_uri="grpc://localhost:8001"
     )

@@ -111,4 +111,4 @@ COPY --chown=1000:1000 --from=full /opt/tritonserver/repoagents/checksum /opt/tr
 RUN chown triton-server:triton-server /opt/tritonserver/repoagents
 COPY --chown=1000:1000 --from=full /usr/bin/serve /usr/bin/.
 
-CMD ["sh", "-c", "tritonserver --model-repository=${MODEL_REPO}"]
+CMD ["sh", "-c", "tritonserver --model-repository=${MODEL_REPO}/${MODEL}"]

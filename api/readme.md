@@ -25,17 +25,26 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     ```
     Poetry will install the "local" group for packages running in the venv, and the "docker" group for packages in the Docker container.
 
-3. Prepare Triton by creating an `.env` file with AWS credentials and the model repository location:
+3. Prepare Triton by creating an `.env` file with AWS credentials and the model information in the `docker-compose.yml`:
     ```bash
     cd ../triton
     touch .env
     ```
 
-    ```text title=".env"
+    ```bash title=".env"
+    # triton/.env
     AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
     AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
     AWS_DEFAULT_REGION=<AWS_DEFAULT_REGION>
-    MODEL_REPO="s3://tipofmytongue-models-gpu/all-MiniLM-L6-v2/"
+    ```
+
+    ```bash
+    # docker-compose.yml
+    services:
+      triton:
+        environment:
+          MODEL: all-MiniLM-L6-v2
+          MODEL_REPO: s3://tipofmytongue-models-gpu
     ```
     There are other options for models. For more information see the Triton [readme](../triton/readme.md).
 
@@ -47,7 +56,7 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     ```
     If you have issues, remove the `-d` flag to troubleshoot.
 
-5. Build the embedding cache into Milvus (this step will take the longest ~5-80 minutes depending on hardware and model dimensions):
+5. Build the embedding cache into Milvus (this step will take the longest ~5-80 minutes depending on hardware and model dimensions). In steps 5-8, set the model name and model dimensions manually in `main()`.
     ```bash
     cd api
 
@@ -77,10 +86,16 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
 
 ## Deployment
 
-1. Run the API server ()
+1. Set the model name in the `docker-compose.yml` and run the API server ():
     ```bash
-    cd ..
+    # docker-compose.yml
+    services:
+      app:
+        environment:
+          MODEL: all-MiniLM-L6-v2
+    ```
 
+    ```bash
     docker compose up -d
     ```
 

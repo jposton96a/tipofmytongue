@@ -28,7 +28,11 @@ services:
     volumes:
       - ./api/res:/src/res:ro
     environment:
-      MODEL_NAME: all-MiniLM-L6-v2
+      MODEL_NAME: gte-small
+      MILVUS_URI: grpc://standalone:19530
+      TRITON_URI: grpc://triton:8001
+      PCA_MODEL_DIR: res/
+      MILVUS_CONNECTION_TIMEOUT: 60
     depends_on:
       - triton
       - standalone
@@ -46,6 +50,9 @@ services:
     ports:
       - 8000-8001:8000-8001
     env_file: ./triton/.env
+    environment:
+      MODEL: gte-small
+      MODEL_REPO: s3://tipofmytongue-models
     depends_on:
       - standalone
     deploy:
