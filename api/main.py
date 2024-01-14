@@ -19,9 +19,9 @@ from app.triton_utils import TritonRemoteModel
 ###########################
 ### App Dependencies
 ###########################
-# model_name = "all-MiniLM-L6-v2"
+model_name = os.getenv("MODEL_NAME")
 # model_name = "all-distilroberta-v1"
-model_name = "gte-large"
+# model_name = "gte-large"
 # model_name = "gte-base"
 # model_name = "gte-small"
 # model_name = "ember-v1"

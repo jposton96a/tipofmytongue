@@ -12,10 +12,10 @@ services:
       context: ./webapp
     networks:
       - frontend
-    environment:
-      API_SERVER: app:8100
     ports:
       - 8080:80
+    environment:
+      API_SERVER: app:8100
     depends_on:
       - app
 
@@ -27,6 +27,8 @@ services:
       - backend
     volumes:
       - ./api/res:/src/res:ro
+    environment:
+      MODEL_NAME: all-MiniLM-L6-v2
     depends_on:
       - triton
       - standalone
@@ -43,9 +45,9 @@ services:
       - backend
     ports:
       - 8000-8001:8000-8001
+    env_file: ./triton/.env
     depends_on:
       - standalone
-    env_file: ./triton/.env
     deploy:
       resources:
         reservations:

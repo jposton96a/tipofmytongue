@@ -88,7 +88,7 @@ if __name__ == "__main__":
     main(
         input_word="aliens",
         num_points=50,
-        model_name="gte-large",
+        model_name="all-MiniLM-L6-v2",
         pca_model_dir="res/",
         milvus_uri="grpc://localhost:19530",
         triton_uri="grpc://localhost:8001"

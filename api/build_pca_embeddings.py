@@ -99,7 +99,7 @@ def main(
 
 if __name__ == "__main__":
     main(
-        model_name="gte-large",
+        model_name="all-MiniLM-L6-v2",
         embedding_dims=3,
         batch_size=5000,
         path_to_vocab="res/words.txt",
