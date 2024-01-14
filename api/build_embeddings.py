@@ -1,4 +1,5 @@
 import sys
+
 from pymilvus import (
     connections,
     utility,
@@ -79,8 +80,8 @@ def main(
 
 if __name__ == "__main__":
     main(
-        model_name="all-MiniLM-L6-v2",
-        embedding_dims=384,
+        model_name="gte-large",
+        embedding_dims=1024,
         batch_size=64,
         path_to_vocab="res/words.txt",
         milvus_uri="grpc://localhost:19530",

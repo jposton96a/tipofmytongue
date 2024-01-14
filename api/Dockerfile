@@ -15,4 +15,3 @@ COPY main.py ./
 COPY app/*.py app/
 
 CMD [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8100" ]
-# torch = {version = "^2.1.2", source = "pytorch-cpu"}

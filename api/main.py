@@ -3,11 +3,11 @@ import sys
 import joblib
 from typing import List
 
-from fastapi import FastAPI, status
-from pydantic import BaseModel
-from contextlib import asynccontextmanager
 from enum import Enum
 from mangum import Mangum
+from pydantic import BaseModel
+from fastapi import FastAPI, status
+from contextlib import asynccontextmanager
 from pymilvus import connections, Collection, MilvusException
 
 from app.embedding_utils import create_embedding
@@ -19,8 +19,11 @@ from app.triton_utils import TritonRemoteModel
 ###########################
 ### App Dependencies
 ###########################
-model_name = "all-MiniLM-L6-v2"
-# model_name = "gte-large"
+# model_name = "all-MiniLM-L6-v2"
+# model_name = "all-distilroberta-v1"
+model_name = "gte-large"
+# model_name = "gte-base"
+# model_name = "gte-small"
 # model_name = "ember-v1"
 
 milvus_uri = "grpc://standalone:19530"

@@ -76,7 +76,7 @@ class TritonRemoteModel:
 def convert_model_to_onnx(model_id, save_path=None):
     from optimum.onnxruntime import ORTModelForFeatureExtraction
 
-    model = ORTModelForFeatureExtraction.from_pretrained(model_id, from_transformers=True)
+    model = ORTModelForFeatureExtraction.from_pretrained(model_id, export=True)
     if save_path:
         model.save_pretrained(save_path)
 

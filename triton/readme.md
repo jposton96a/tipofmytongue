@@ -8,9 +8,13 @@ AWS_DEFAULT_REGION=<AWS_DEFAULT_REGION>
 MODEL_REPO="s3://tipofmytongue-models-gpu/all-MiniLM-L6-v2/"
 ```
 
-There are currently two models available at the following locations:
+There are currently six models available at the following locations:
 * all-MiniLM-L6-v2: `s3://tipofmytongue-models-gpu/all-MiniLM-L6-v2/` (384 dimensions)
+* all-distilroberta-v1: `s3://tipofmytongue-models-gpu/all-distilroberta-v1/` (768 dimensions)
 * gte-large: `s3://tipofmytongue-models-gpu/gte-large/` (1024 dimensions)
+* gte-base: `s3://tipofmytongue-models-gpu/gte-base/` (768 dimensions)
+* gte-small: `s3://tipofmytongue-models-gpu/gte-small/` (384 dimensions)
+* ember-v1: `s3://tipofmytongue-models-gpu/ember-v1/` (1024 dimensions)
 
 Triton can be started using Docker and the compose plugin. The service is located in the `docker-compose.yml` file named `triton`. 
 

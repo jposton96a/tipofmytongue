@@ -7,7 +7,7 @@ This directory contains the scripts & API implementation used to run the backend
 The server relies on a list of words & a pre-computed PCA model file. Each of these must be created before starting the server:
 
 1. Vocabulary list `res/words.txt` - (created in Step #1) a list of words to query against
-2. PCA Transform Model `res/pca_transform.pkl` - (created in Step #6) the trained PCA model
+2. PCA Transform Model `res/pca_model_<MODEL_NAME>.pkl` - (created in Step #6) the trained PCA model
 
 ## Development Setup
 
@@ -41,12 +41,16 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
 
 4. Start Milvus and Triton services (Triton depends on Milvus, so Milvus will start when Triton is launched):
     ```bash
+    cd ..
+
     docker compose up -d triton
     ```
     If you have issues, remove the `-d` flag to troubleshoot.
 
 5. Build the embedding cache into Milvus (this step will take the longest ~5-80 minutes depending on hardware and model dimensions):
     ```bash
+    cd api
+
     # Options can be changed at the bottom of this file
     python build_embeddings.py
     ```
@@ -56,7 +60,7 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     # Options can be changed at the bottom of this file
     python build_pca_embeddings.py
     ```
-    By default, the pickle model will save to `res/pca_transform.pkl`.
+    By default, the pickle model will save to `res/pca_model_<MODEL_NAME>.pkl`.
 
 7. (Optional - debug tooling) Query an embedding against the cache db:
     ```bash
@@ -77,10 +81,6 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     ```bash
     cd ..
 
-    # If Milvus and Triton are still running
-    docker compose up -d app webapp
-
-    # If Milvus and Triton are not running, run all services:
     docker compose up -d
     ```
 

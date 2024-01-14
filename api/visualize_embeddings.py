@@ -1,5 +1,6 @@
 import os
 import sys
+
 import joblib
 import numpy as np
 import matplotlib.pyplot as plt
@@ -87,7 +88,7 @@ if __name__ == "__main__":
     main(
         input_word="aliens",
         num_points=50,
-        model_name="all-MiniLM-L6-v2",
+        model_name="gte-large",
         pca_model_dir="res/",
         milvus_uri="grpc://localhost:19530",
         triton_uri="grpc://localhost:8001"
