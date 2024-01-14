@@ -22,8 +22,8 @@ from app.triton_utils import TritonRemoteModel
 model_name = os.getenv("MODEL_NAME")
 milvus_uri = os.getenv("MILVUS_URI")
 triton_uri = os.getenv("TRITON_URI")
-pca_model_dir = os.getenv("PCA_MODEL_DIR")
-connection_timeout = int(os.getenv("MILVUS_CONNECTION_TIMEOUT"))
+pca_model_dir = "res/"
+connection_timeout = 60
 
 embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
 pca_collection_name = embedding_collection_name + "_pca"

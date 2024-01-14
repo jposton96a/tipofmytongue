@@ -31,14 +31,12 @@ services:
       MODEL_NAME: gte-small
       MILVUS_URI: grpc://standalone:19530
       TRITON_URI: grpc://triton:8001
-      PCA_MODEL_DIR: res/
-      MILVUS_CONNECTION_TIMEOUT: 60
     depends_on:
       - triton
       - standalone
     healthcheck:
       test: [ "CMD", "curl", "-i", "-X", "GET", "http://localhost:8100/health" ]
-      interval: 30s
+      interval: 60s
       timeout: 20s
       retries: 3
 
@@ -52,7 +50,7 @@ services:
     env_file: ./triton/.env
     environment:
       MODEL: gte-small
-      MODEL_REPO: s3://tipofmytongue-models
+      MODEL_REPO: s3://tipofmytongue-models-gpu
     depends_on:
       - standalone
     deploy:
