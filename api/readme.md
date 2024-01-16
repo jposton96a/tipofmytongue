@@ -33,7 +33,7 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
 
     ```bash title=".env"
     # .env
-    MODEL_NAME=all-MiniLM-L6-v2
+    MODEL_NAME=gte-small
     MODEL_REPO=s3://tipofmytongue-models-gpu
 
     AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>

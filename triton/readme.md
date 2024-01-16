@@ -3,7 +3,7 @@ There are many different Triton model repositories available at `s3://tipofmyton
 
 ```bash title=".env"
 # triton/.env
-MODEL_NAME=gte-base
+MODEL_NAME=gte-small
 MODEL_REPO=s3://tipofmytongue-models-gpu
 
 AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
