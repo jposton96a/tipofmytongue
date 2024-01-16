@@ -51,7 +51,7 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     ```
     If you have issues, remove the `-d` flag to troubleshoot.
 
-5. Build the embedding cache into Milvus (this step will take the longest ~5-80 minutes depending on hardware and model dimensions). In steps 5-8, set the model name and model dimensions manually in `main()`.
+5. Build the embedding cache into Milvus (this step will take the longest ~5-120 minutes depending on hardware and model dimensions). In steps 5-8, set the model name and model dimensions manually in `main()`.
     ```bash
     cd api
 

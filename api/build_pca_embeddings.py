@@ -18,8 +18,7 @@ def main(
     batch_size,
     path_to_vocab,
     pca_model_dir,
-    milvus_uri,
-    connection_timeout=10
+    milvus_uri
 ):
     # Milvus doesn't allow hyphens, so replace with underscores
     embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
@@ -29,7 +28,7 @@ def main(
 
     # Establish connection to Milvus
     try:
-        connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
+        connections.connect(alias="default", uri=milvus_uri)
         embedding_collection = Collection(embedding_collection_name)
         embedding_collection.load()
     except MilvusException as e:

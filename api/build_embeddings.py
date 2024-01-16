@@ -18,15 +18,14 @@ def main(
     batch_size,
     path_to_vocab,
     milvus_uri,
-    triton_uri,
-    connection_timeout=10
+    triton_uri
 ):
     # Milvus doesn't allow hyphens, so replace with underscores
     collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
 
     # Establish connection to Milvus and Triton
     try:
-        connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
+        connections.connect(alias="default", uri=milvus_uri)
         model = TritonRemoteModel(uri=triton_uri, model_name=model_name)
     except MilvusException as e:
         print(f"Could not establish connection to Milvus: {e}")

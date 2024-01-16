@@ -29,11 +29,14 @@ services:
       - ./api/res:/src/res:ro
     env_file: .env
     depends_on:
-      - triton
-      - standalone
+      standalone:
+        condition: service_healthy
+      triton:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-i", "-X", "GET", "http://localhost:8100/health" ]
-      interval: 30s
+      start_period: 30s
+      interval: 20s
       timeout: 20s
       retries: 3
     restart: unless-stopped
@@ -47,7 +50,8 @@ services:
       - 8000-8001:8000-8001
     env_file: .env
     depends_on:
-      - standalone
+      standalone:
+        condition: service_started
     deploy:
       resources:
         reservations:
@@ -57,9 +61,10 @@ services:
               capabilities: [gpu]
     healthcheck:
       test: [ "CMD", "curl", "-i", "-X", "GET", "http://localhost:8000/v2/health/ready" ]
+      start_period: 30s
       interval: 30s
       timeout: 20s
-      retries: 6
+      retries: 3
 
   standalone:
     container_name: milvus-standalone

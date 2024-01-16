@@ -23,7 +23,6 @@ model_name = os.getenv("MODEL_NAME")
 milvus_uri = "grpc://standalone:19530"
 triton_uri = "grpc://triton:8001"
 pca_model_dir = "res/"
-connection_timeout = 60
 
 embedding_collection_name = model_name.replace("-", "_") if "-" in model_name else model_name
 pca_collection_name = embedding_collection_name + "_pca"
@@ -34,7 +33,7 @@ pca_model_path = os.path.join(pca_model_dir, "pca_model_" + embedding_collection
 
 # Establish connection to Milvus and Triton service
 try:
-    connections.connect(alias="default", uri=milvus_uri, timeout=connection_timeout)
+    connections.connect(alias="default", uri=milvus_uri)
     model = TritonRemoteModel(uri=triton_uri, model_name=model_name)
 except MilvusException as e:
     print(f"Could not establish connection to Milvus: {e}")
