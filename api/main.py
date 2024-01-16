@@ -20,8 +20,8 @@ from app.triton_utils import TritonRemoteModel
 ### App Dependencies
 ###########################
 model_name = os.getenv("MODEL_NAME")
-milvus_uri = os.getenv("MILVUS_URI")
-triton_uri = os.getenv("TRITON_URI")
+milvus_uri = "grpc://standalone:19530"
+triton_uri = "grpc://triton:8001"
 pca_model_dir = "res/"
 connection_timeout = 60
 

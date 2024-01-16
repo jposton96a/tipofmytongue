@@ -27,10 +27,7 @@ services:
       - backend
     volumes:
       - ./api/res:/src/res:ro
-    environment:
-      MODEL_NAME: gte-small
-      MILVUS_URI: grpc://standalone:19530
-      TRITON_URI: grpc://triton:8001
+    env_file: .env
     depends_on:
       - triton
       - standalone
@@ -38,7 +35,8 @@ services:
       test: [ "CMD", "curl", "-i", "-X", "GET", "http://localhost:8100/health" ]
       interval: 30s
       timeout: 20s
-      retries: 3
+      retries: 6
+    restart: unless-stopped
 
   triton:
     build:
@@ -47,10 +45,7 @@ services:
       - backend
     ports:
       - 8000-8001:8000-8001
-    env_file: ./triton/.env
-    environment:
-      MODEL: gte-small
-      MODEL_REPO: s3://tipofmytongue-models-gpu
+    env_file: .env
     depends_on:
       - standalone
     deploy:
@@ -64,7 +59,7 @@ services:
       test: [ "CMD", "curl", "-i", "-X", "GET", "http://localhost:8000/v2/health/ready" ]
       interval: 30s
       timeout: 20s
-      retries: 3
+      retries: 6
 
   standalone:
     container_name: milvus-standalone

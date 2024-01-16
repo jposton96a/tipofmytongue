@@ -25,27 +25,22 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
     ```
     Poetry will install the "local" group for packages running in the venv, and the "docker" group for packages in the Docker container.
 
-3. Prepare Triton by creating an `.env` file with AWS credentials and the model information in the `docker-compose.yml`:
+3. Prepare Triton by creating an `.env` file with AWS credentials and the model information:
     ```bash
     cd ../triton
     touch .env
     ```
 
     ```bash title=".env"
-    # triton/.env
+    # .env
+    MODEL_NAME=all-MiniLM-L6-v2
+    MODEL_REPO=s3://tipofmytongue-models-gpu
+
     AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
     AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
     AWS_DEFAULT_REGION=<AWS_DEFAULT_REGION>
     ```
 
-    ```bash
-    # docker-compose.yml
-    services:
-      triton:
-        environment:
-          MODEL: all-MiniLM-L6-v2
-          MODEL_REPO: s3://tipofmytongue-models-gpu
-    ```
     There are other options for models. For more information see the Triton [readme](../triton/readme.md).
 
 4. Start Milvus and Triton services (Triton depends on Milvus, so Milvus will start when Triton is launched):
@@ -86,13 +81,15 @@ The server relies on a list of words & a pre-computed PCA model file. Each of th
 
 ## Deployment
 
-1. Set the model name in the `docker-compose.yml` and run the API server ():
-    ```bash
-    # docker-compose.yml
-    services:
-      app:
-        environment:
-          MODEL: all-MiniLM-L6-v2
+1. Set the model information in the `.env` file and run the API server ():
+    ```bash title=".env"
+    # .env
+    MODEL_NAME=<MODEL_NAME>
+    MODEL_REPO=<S3_BUCKET>
+
+    AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
+    AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
+    AWS_DEFAULT_REGION=<AWS_DEFAULT_REGION>
     ```
 
     ```bash

@@ -1,23 +1,17 @@
 ## Setting up Triton Inference Server
-There are many different Triton model repositories available at `s3://tipofmytongue-models-gpu/` and are public facing. This project requires an environment variable file at `triton/.env` containing AWS credentials and the model and s3 bucket path defined in the `docker-compose.yml` file.
+There are many different Triton model repositories available at `s3://tipofmytongue-models-gpu/` and are public facing. This project requires an environment variable file `.env`, in the root of this project, containing the model name, s3 bucket name, and AWS credentials.
 
-```bash title="triton/.env"
+```bash title=".env"
 # triton/.env
+MODEL_NAME=gte-base
+MODEL_REPO=s3://tipofmytongue-models-gpu
+
 AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
 AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
 AWS_DEFAULT_REGION=<AWS_DEFAULT_REGION>
 ```
 
-```bash title="docker-compose.yml"
-# docker-compose.yml
-services:
-  triton:
-    environment:
-      MODEL: all-MiniLM-L6-v2
-      MODEL_REPO: s3://tipofmytongue-models-gpu
-```
-
-The final path will concatenate these two variables with a forward slash (`/`).
+The final path will concatenate the `MODEL_NAME` and `MODEL_REPO` with a forward slash (`/`).
 
 There are currently six models available at the following locations:
 * all-MiniLM-L6-v2: `s3://tipofmytongue-models-gpu/all-MiniLM-L6-v2/` (384 dimensions)
